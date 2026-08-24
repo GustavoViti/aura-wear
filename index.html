@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPOTTED. — a loja que a Upper East Side comenta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Jost:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="toast" id="toast" aria-live="polite"></div>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="#" class="wordmark">SPOTTED<span class="dot">.</span></a>
+
+    <nav class="main-nav" aria-label="Navegação principal">
+      <a href="#vitrine">Vitrine</a>
+      <a href="#categorias">Categorias</a>
+      <a href="#" class="disabled" title="Em breve">Sobre</a>
+    </nav>
+
+    <div class="header-actions">
+      <button class="icon-btn" aria-label="Buscar">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="20" y1="20" x2="15.5" y2="15.5"/></svg>
+      </button>
+      <button class="icon-btn bag-btn" aria-label="Sua sacola" id="bagBtn">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 8h12l-1 12H7L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+        <span class="bag-count" id="bagCount">0</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="ticker" role="marquee" aria-label="Últimas fofocas da loja">
+  <div class="ticker-track" id="tickerTrack"></div>
+</div>
+
+<section class="hero">
+  <div class="hero-text">
+    <p class="eyebrow">Edição desta semana</p>
+    <h1>Bom dia,<br>Upper East Side.</h1>
+    <p class="hero-sub">Foi visto: a coleção que todo mundo vai querer usar — e comentar — nesta temporada. Você sabe que ama. XOXO.</p>
+    <a href="#vitrine" class="btn-gold">Ver a vitrine completa</a>
+  </div>
+  <div class="hero-art" aria-hidden="true">
+    <div class="hero-frame">
+      <svg viewBox="0 0 200 260" width="100%" height="100%">
+        <rect x="1" y="1" width="198" height="258" fill="none" stroke="currentColor" stroke-width="1"/>
+        <path d="M100 40 C70 40 55 65 55 95 C55 140 85 170 100 210 C115 170 145 140 145 95 C145 65 130 40 100 40 Z" fill="none" stroke="currentColor" stroke-width="1.1"/>
+        <line x1="100" y1="40" x2="100" y2="210" stroke="currentColor" stroke-width="0.6"/>
+      </svg>
+    </div>
+    <p class="hero-caption">Look da capa — edição impressa esgotada</p>
+  </div>
+</section>
+
+<section class="categories" id="categorias">
+  <div class="section-head">
+    <p class="eyebrow">Navegue por fonte</p>
+    <h2>O que estão vestindo</h2>
+  </div>
+  <div class="category-strip" id="categoryStrip"></div>
+</section>
+
+<section class="catalog" id="vitrine">
+  <div class="section-head">
+    <p class="eyebrow" id="catalogEyebrow">Todas as fontes</p>
+    <h2 id="catalogTitle">A vitrine</h2>
+  </div>
+  <div class="product-grid" id="productGrid"></div>
+</section>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <p class="wordmark small">SPOTTED<span class="dot">.</span></p>
+    <p class="footer-line">Você sabe que ama.</p>
+    <p class="footer-xoxo">XOXO</p>
+  </div>
+</footer>
+
+<script src="products.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
