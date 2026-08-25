@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SPOTTED. — a loja que a Upper East Side comenta</title>
+<title>AURA WEAR — a loja que a Upper East Side comenta</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Jost:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
@@ -12,10 +12,11 @@
 <body>
 
 <div class="toast" id="toast" aria-live="polite"></div>
+<div class="overlay" id="overlay"></div>
 
 <header class="site-header">
   <div class="header-inner">
-    <a href="#" class="wordmark">SPOTTED<span class="dot">.</span></a>
+    <a href="#" class="wordmark">AURA WEAR<span class="dot">.</span></a>
 
     <nav class="main-nav" aria-label="Navegação principal">
       <a href="#vitrine">Vitrine</a>
@@ -41,16 +42,16 @@
 
 <section class="hero">
   <div class="hero-text">
-    <p class="eyebrow">Edição desta semana</p>
-    <h1>Bom dia,<br>Upper East Side.</h1>
-    <p class="hero-sub">Foi visto: a coleção que todo mundo vai querer usar — e comentar — nesta temporada. Você sabe que ama. XOXO.</p>
-    <a href="#vitrine" class="btn-gold">Ver a vitrine completa</a>
+    <p class="eyebrow reveal-load" style="--d:0">Edição desta semana</p>
+    <h1 class="reveal-load" style="--d:1">Bom dia,<br>Upper East Side.</h1>
+    <p class="hero-sub reveal-load" style="--d:2">Foi visto: a coleção que todo mundo vai querer usar — e comentar — nesta temporada. Você sabe que ama. XOXO.</p>
+    <a href="#vitrine" class="btn-gold reveal-load" style="--d:3">Ver a vitrine completa</a>
   </div>
-  <div class="hero-art" aria-hidden="true">
+  <div class="hero-art reveal-load" style="--d:2" aria-hidden="true">
     <div class="hero-frame">
       <svg viewBox="0 0 200 260" width="100%" height="100%">
         <rect x="1" y="1" width="198" height="258" fill="none" stroke="currentColor" stroke-width="1"/>
-        <path d="M100 40 C70 40 55 65 55 95 C55 140 85 170 100 210 C115 170 145 140 145 95 C145 65 130 40 100 40 Z" fill="none" stroke="currentColor" stroke-width="1.1"/>
+        <path class="hero-dress-path" d="M100 40 C70 40 55 65 55 95 C55 140 85 170 100 210 C115 170 145 140 145 95 C145 65 130 40 100 40 Z" fill="none" stroke="currentColor" stroke-width="1.1"/>
         <line x1="100" y1="40" x2="100" y2="210" stroke="currentColor" stroke-width="0.6"/>
       </svg>
     </div>
@@ -76,11 +77,139 @@
 
 <footer class="site-footer">
   <div class="footer-inner">
-    <p class="wordmark small">SPOTTED<span class="dot">.</span></p>
+    <p class="wordmark small">AURA WEAR<span class="dot">.</span></p>
     <p class="footer-line">Você sabe que ama.</p>
     <p class="footer-xoxo">XOXO</p>
   </div>
 </footer>
+
+<!-- CART DRAWER -->
+<aside class="cart-drawer" id="cartDrawer" aria-label="Sua sacola">
+  <div class="drawer-head">
+    <h3>Sua sacola</h3>
+    <button class="icon-btn" id="closeDrawer" aria-label="Fechar sacola">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
+    </button>
+  </div>
+  <div class="drawer-items" id="cartItems"></div>
+  <div class="drawer-foot">
+    <div class="drawer-subtotal">
+      <span>Subtotal</span>
+      <span id="cartSubtotal">R$ 0,00</span>
+    </div>
+    <button class="btn-gold full" id="checkoutBtn" disabled>Finalizar compra</button>
+  </div>
+</aside>
+
+<!-- CHECKOUT MODAL -->
+<div class="checkout-modal" id="checkoutModal" role="dialog" aria-modal="true" aria-label="Finalizar compra">
+  <div class="checkout-panel">
+    <button class="icon-btn checkout-close" id="closeCheckout" aria-label="Fechar">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
+    </button>
+
+    <div class="step-indicator" id="stepIndicator">
+      <div class="step-dot active" data-step="1"><span>1</span><label>Entrega</label></div>
+      <div class="step-line"></div>
+      <div class="step-dot" data-step="2"><span>2</span><label>Pagamento</label></div>
+      <div class="step-line"></div>
+      <div class="step-dot" data-step="3"><span>3</span><label>Confirmação</label></div>
+    </div>
+
+    <div class="step-panels" id="stepPanels">
+
+      <!-- STEP 1 -->
+      <form class="step-panel active" data-step="1" id="shippingForm" novalidate>
+        <h3 class="checkout-title">Para onde enviamos?</h3>
+        <div class="field-row">
+          <label>Nome completo
+            <input type="text" name="fullname" required placeholder="Blair Waldorf">
+          </label>
+        </div>
+        <div class="field-row">
+          <label>Endereço
+            <input type="text" name="address" required placeholder="5th Avenue, 1020">
+          </label>
+        </div>
+        <div class="field-row two">
+          <label>Cidade
+            <input type="text" name="city" required placeholder="Poços de Caldas">
+          </label>
+          <label>CEP
+            <input type="text" name="cep" required placeholder="00000-000">
+          </label>
+        </div>
+        <button type="submit" class="btn-gold full">Continuar para pagamento</button>
+      </form>
+
+      <!-- STEP 2 -->
+      <form class="step-panel" data-step="2" id="paymentForm" novalidate>
+        <h3 class="checkout-title">Como prefere pagar?</h3>
+        <div class="pay-methods">
+          <label class="pay-option active">
+            <input type="radio" name="method" value="card" checked>
+            <span>Cartão</span>
+          </label>
+          <label class="pay-option">
+            <input type="radio" name="method" value="pix">
+            <span>Pix</span>
+          </label>
+        </div>
+
+        <div class="card-fields">
+          <div class="field-row">
+            <label>Número do cartão
+              <input type="text" name="cardNumber" inputmode="numeric" maxlength="19" placeholder="0000 0000 0000 0000">
+            </label>
+          </div>
+          <div class="field-row">
+            <label>Nome no cartão
+              <input type="text" name="cardName" placeholder="BLAIR C WALDORF">
+            </label>
+          </div>
+          <div class="field-row two">
+            <label>Validade
+              <input type="text" name="cardExpiry" maxlength="5" placeholder="MM/AA">
+            </label>
+            <label>CVV
+              <input type="text" name="cardCvv" inputmode="numeric" maxlength="4" placeholder="000">
+            </label>
+          </div>
+        </div>
+
+        <div class="pix-note">
+          <p>O código Pix aparece assim que você confirmar — pagamento simulado para fins de apresentação.</p>
+        </div>
+
+        <div class="checkout-actions">
+          <button type="button" class="btn-outline" id="backToStep1">Voltar</button>
+          <button type="submit" class="btn-gold">Confirmar pedido</button>
+        </div>
+      </form>
+
+      <!-- STEP 3 -->
+      <div class="step-panel" data-step="3" id="confirmPanel">
+        <div class="confirm-loading" id="confirmLoading">
+          <div class="loader-dots"><span></span><span></span><span></span></div>
+          <p>Confirmando com a redação...</p>
+        </div>
+        <div class="confirm-success" id="confirmSuccess">
+          <svg class="check-svg" viewBox="0 0 60 60" width="64" height="64">
+            <circle class="check-circle" cx="30" cy="30" r="27" fill="none" stroke-width="1.5"/>
+            <path class="check-mark" d="M18 31 L26 39 L43 21" fill="none" stroke-width="2.5"/>
+          </svg>
+          <h3 class="checkout-title">Pedido confirmado.</h3>
+          <p class="confirm-order">Pedido <span id="orderNumber">#AW-0000</span></p>
+          <p class="confirm-copy">A redação já está de olho. Você vai receber os detalhes por e-mail — e sim, todo mundo vai comentar. XOXO.</p>
+          <button class="btn-gold" id="continueShopping">Continuar comprando</button>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="cart-summary" id="checkoutSummary"></div>
+  </div>
+</div>
 
 <script src="products.js"></script>
 <script src="script.js"></script>
