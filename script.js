@@ -85,7 +85,11 @@
         <article class="product-card" style="--i:${i}">
           <div class="product-swatch swatch-${p.swatch}">
             ${p.featured ? '<span class="featured-badge">XOXO</span>' : ""}
-            <span class="monogram">${p.name.charAt(0)}</span>
+            ${
+              p.imageUrl
+                ? `<img class="product-photo" src="${p.imageUrl}" alt="${p.name}" loading="lazy">`
+                : `<span class="monogram">${p.name.charAt(0)}</span>`
+            }
           </div>
           <div class="product-info">
             <h3 class="product-name">${p.name}</h3>
@@ -153,6 +157,7 @@
         name: product.name,
         priceCents: product.priceCents,
         swatch: product.swatch,
+        imageUrl: product.imageUrl,
         qty: 1,
       });
     }
@@ -209,7 +214,11 @@
         .map(
           (item) => `
           <div class="cart-item">
-            <div class="cart-item-swatch swatch-${item.swatch}">${item.name.charAt(0)}</div>
+            <div class="cart-item-swatch swatch-${item.swatch}">${
+              item.imageUrl
+                ? `<img src="${item.imageUrl}" alt="${item.name}" loading="lazy">`
+                : item.name.charAt(0)
+            }</div>
             <div class="cart-item-info">
               <span class="cart-item-name">${item.name}</span>
               <span class="cart-item-price">${formatPrice(item.priceCents)}</span>

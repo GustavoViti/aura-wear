@@ -7,7 +7,9 @@ pagamento real.
 ## Setup do Supabase
 
 1. Crie um projeto em https://supabase.com.
-2. No SQL Editor do projeto, rode o conteúdo de `schema.sql`.
+2. No SQL Editor do projeto, rode o conteúdo de `schema.sql` — ele cria a
+   tabela `products`, o bucket de storage `product-images` (público) e as
+   policies de leitura/escrita.
 3. Em Project Settings > API, copie a **Project URL** e a **anon public key**.
 4. Copie `config.example.js` para `config.js` e preencha com esses dois valores.
    (Opcional: copie `.env.example` para `.env` também, como referência única
@@ -19,6 +21,9 @@ pagamento real.
 
 Sem `config.js` preenchido, a loja funciona normalmente com o catálogo local
 mockado em `products.js` — útil pra testar a interface sem depender do banco.
+
+No admin, o upload de foto é opcional: sem foto, o card do produto usa a cor
+escolhida (placeholder com monograma) — igual antes.
 
 ## Estrutura
 

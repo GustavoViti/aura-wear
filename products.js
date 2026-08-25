@@ -22,6 +22,7 @@ let PRODUCTS = [
     description: "Alfaiataria fluida em tafetá, comprimento midi.",
     featured: true,
     swatch: "wine",
+    imageUrl: "",
   },
   {
     id: "p02",
@@ -31,6 +32,7 @@ let PRODUCTS = [
     description: "Xadrez príncipe de Gales, decote em V.",
     featured: false,
     swatch: "ink",
+    imageUrl: "",
   },
   {
     id: "p03",
@@ -40,6 +42,7 @@ let PRODUCTS = [
     description: "Seda plissada, para entradas que não passam despercebidas.",
     featured: true,
     swatch: "blush",
+    imageUrl: "",
   },
   {
     id: "p04",
@@ -49,6 +52,7 @@ let PRODUCTS = [
     description: "Corte reto, botões dourados, ombros estruturados.",
     featured: true,
     swatch: "ink",
+    imageUrl: "",
   },
   {
     id: "p05",
@@ -58,6 +62,7 @@ let PRODUCTS = [
     description: "Gabardine impermeável, cinto de amarrar.",
     featured: false,
     swatch: "gold",
+    imageUrl: "",
   },
   {
     id: "p06",
@@ -67,6 +72,7 @@ let PRODUCTS = [
     description: "Lã dupla-face, forro em cetim assinado.",
     featured: false,
     swatch: "wine",
+    imageUrl: "",
   },
   {
     id: "p07",
@@ -76,6 +82,7 @@ let PRODUCTS = [
     description: "Couro estruturado, alça removível, fecho em metal dourado.",
     featured: true,
     swatch: "wine",
+    imageUrl: "",
   },
   {
     id: "p08",
@@ -85,6 +92,7 @@ let PRODUCTS = [
     description: "Cetim bordado à mão, corrente fina.",
     featured: false,
     swatch: "blush",
+    imageUrl: "",
   },
   {
     id: "p09",
@@ -94,6 +102,7 @@ let PRODUCTS = [
     description: "Pérolas naturais, fecho em ouro 18k.",
     featured: false,
     swatch: "gold",
+    imageUrl: "",
   },
   {
     id: "p10",
@@ -103,6 +112,7 @@ let PRODUCTS = [
     description: "Armação em acetato, lentes degradê.",
     featured: false,
     swatch: "ink",
+    imageUrl: "",
   },
 ];
 

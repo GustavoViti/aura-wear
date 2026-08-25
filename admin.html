@@ -61,7 +61,24 @@
       </div>
 
       <div class="field-row">
-        <span class="field-label">Cor do card (placeholder visual)</span>
+        <span class="field-label">Foto do produto</span>
+        <div class="image-upload">
+          <div class="image-preview" id="imagePreview">
+            <span class="image-preview-empty">Sem foto</span>
+          </div>
+          <div class="image-upload-controls">
+            <label class="btn-outline file-btn">
+              Escolher imagem
+              <input type="file" id="imageInput" accept="image/png, image/jpeg, image/webp" hidden>
+            </label>
+            <button type="button" class="link-btn" id="removeImage" hidden>Remover foto</button>
+            <p class="image-hint">JPG, PNG ou WEBP. Sem foto, o card usa a cor escolhida abaixo como placeholder.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <span class="field-label">Cor do card (placeholder visual, usado quando não há foto)</span>
         <div class="swatch-picker" id="swatchPicker">
           <label class="swatch-option" data-swatch="wine">
             <input type="radio" name="swatch" value="wine" checked>
@@ -104,7 +121,7 @@
       <table class="admin-table">
         <thead>
           <tr>
-            <th></th>
+            <th>Foto</th>
             <th>Nome</th>
             <th>Categoria</th>
             <th>Preço</th>

@@ -7,6 +7,8 @@
   });
 
   let editingId = null;
+  let selectedFile = null;
+  let currentImageUrl = "";
 
   function formatPrice(cents) {
     return priceFormatter.format(cents / 100);
@@ -20,7 +22,74 @@
     return Math.round(value * 100);
   }
 
-  let toastTimer = null;
+  const BUCKET = "product-images";
+
+  function extractStoragePath(publicUrl) {
+    if (!publicUrl) return null;
+    const marker = `/object/public/${BUCKET}/`;
+    const idx = publicUrl.indexOf(marker);
+    if (idx === -1) return null;
+    return publicUrl.slice(idx + marker.length);
+  }
+
+  async function deleteImageFromStorage(publicUrl) {
+    const path = extractStoragePath(publicUrl);
+    if (!path || !window.supabaseClient) return;
+    const { error } = await window.supabaseClient.storage.from(BUCKET).remove([path]);
+    if (error) console.warn("Não foi possível remover a imagem antiga do storage.", error.message);
+  }
+
+  async function uploadSelectedImage() {
+    if (!selectedFile || !window.supabaseClient) return currentImageUrl || null;
+
+    const ext = selectedFile.name.split(".").pop().toLowerCase();
+    const safeExt = ["jpg", "jpeg", "png", "webp"].includes(ext) ? ext : "jpg";
+    const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${safeExt}`;
+
+    const { error } = await window.supabaseClient.storage.from(BUCKET).upload(path, selectedFile, {
+      cacheControl: "3600",
+      upsert: false,
+    });
+
+    if (error) {
+      console.error(error);
+      showToast("Não foi possível enviar a imagem. Confira o console.");
+      return null;
+    }
+
+    const { data } = window.supabaseClient.storage.from(BUCKET).getPublicUrl(path);
+    return data.publicUrl;
+  }
+
+  function renderImagePreview(url) {
+    const preview = document.getElementById("imagePreview");
+    const removeBtn = document.getElementById("removeImage");
+    if (url) {
+      preview.innerHTML = `<img src="${url}" alt="Prévia da imagem">`;
+      removeBtn.hidden = false;
+    } else {
+      preview.innerHTML = `<span class="image-preview-empty">Sem foto</span>`;
+      removeBtn.hidden = true;
+    }
+  }
+
+  function handleImageSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    selectedFile = file;
+    const reader = new FileReader();
+    reader.onload = (e) => renderImagePreview(e.target.result);
+    reader.readAsDataURL(file);
+  }
+
+  function handleRemoveImage() {
+    selectedFile = null;
+    currentImageUrl = "";
+    document.getElementById("imageInput").value = "";
+    renderImagePreview("");
+  }
+
+
   function showToast(message) {
     const toast = document.getElementById("toast");
     toast.textContent = message;
@@ -77,7 +146,11 @@
       .map(
         (p) => `
         <tr data-id="${p.id}">
-          <td><span class="table-swatch swatch-${p.swatch}"></span></td>
+          <td>${
+            p.image_url
+              ? `<img class="table-photo" src="${p.image_url}" alt="${p.name}" loading="lazy">`
+              : `<span class="table-swatch swatch-${p.swatch}"></span>`
+          }</td>
           <td class="table-name">${p.name}</td>
           <td>${categoryLabel(p.category)}</td>
           <td>${formatPrice(p.price_cents)}</td>
@@ -96,7 +169,9 @@
       btn.addEventListener("click", () => startEdit(products.find((p) => p.id === btn.dataset.id)))
     );
     body.querySelectorAll(".row-delete").forEach((btn) =>
-      btn.addEventListener("click", () => deleteProduct(btn.dataset.id, btn.closest("tr")))
+      btn.addEventListener("click", () =>
+        deleteProduct(btn.dataset.id, btn.closest("tr"), products.find((p) => p.id === btn.dataset.id)?.image_url)
+      )
     );
   }
 
@@ -119,6 +194,11 @@
     const swatchInput = form.querySelector(`input[name="swatch"][value="${product.swatch}"]`);
     if (swatchInput) swatchInput.checked = true;
 
+    selectedFile = null;
+    currentImageUrl = product.image_url || "";
+    document.getElementById("imageInput").value = "";
+    renderImagePreview(currentImageUrl);
+
     document.getElementById("formEyebrow").textContent = "Editando";
     document.getElementById("formTitle").textContent = `Editar "${product.name}"`;
     document.getElementById("submitBtn").textContent = "Salvar alterações";
@@ -129,15 +209,18 @@
 
   function resetForm() {
     editingId = null;
+    selectedFile = null;
+    currentImageUrl = "";
     const form = document.getElementById("productForm");
     form.reset();
+    renderImagePreview("");
     document.getElementById("formEyebrow").textContent = "Novo item";
     document.getElementById("formTitle").textContent = "Cadastrar produto";
     document.getElementById("submitBtn").textContent = "Cadastrar produto";
     document.getElementById("cancelEdit").hidden = true;
   }
 
-  async function deleteProduct(id, rowEl) {
+  async function deleteProduct(id, rowEl, imageUrl) {
     if (!window.supabaseClient) return;
     const confirmed = confirm("Excluir este produto do catálogo?");
     if (!confirmed) return;
@@ -151,6 +234,8 @@
       if (rowEl) rowEl.style.opacity = "1";
       return;
     }
+
+    if (imageUrl) await deleteImageFromStorage(imageUrl);
 
     showToast("Produto removido do catálogo.");
     if (editingId === id) resetForm();
@@ -191,6 +276,21 @@
     const payload = { name, category, price_cents: priceCents, description, featured, swatch };
     const submitBtn = document.getElementById("submitBtn");
     submitBtn.disabled = true;
+    submitBtn.textContent = selectedFile ? "Enviando foto..." : (editingId ? "Salvando..." : "Cadastrando...");
+
+    if (selectedFile) {
+      const oldImageUrl = editingId ? currentImageUrl : null;
+      const uploadedUrl = await uploadSelectedImage();
+      if (uploadedUrl === null) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = editingId ? "Salvar alterações" : "Cadastrar produto";
+        return;
+      }
+      payload.image_url = uploadedUrl;
+      if (oldImageUrl) await deleteImageFromStorage(oldImageUrl);
+    } else {
+      payload.image_url = currentImageUrl || null;
+    }
 
     let error;
     if (editingId) {
@@ -204,6 +304,7 @@
     if (error) {
       console.error(error);
       showToast("Não foi possível salvar. Confira o console.");
+      submitBtn.textContent = editingId ? "Salvar alterações" : "Cadastrar produto";
       return;
     }
 
@@ -218,6 +319,8 @@
 
     document.getElementById("productForm").addEventListener("submit", handleSubmit);
     document.getElementById("cancelEdit").addEventListener("click", resetForm);
+    document.getElementById("imageInput").addEventListener("change", handleImageSelect);
+    document.getElementById("removeImage").addEventListener("click", handleRemoveImage);
 
     document.querySelectorAll(".swatch-option").forEach((label) => {
       label.addEventListener("click", () => {
