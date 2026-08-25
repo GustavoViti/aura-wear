@@ -985,3 +985,15 @@ a:focus-visible, button:focus-visible {
   .field-row.two { grid-template-columns: 1fr; }
   .checkout-actions { flex-direction: column; }
 }
+
+.footer-admin-link {
+  display: inline-block;
+  margin-top: var(--space-3);
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(246, 241, 231, 0.35);
+  transition: color 0.2s ease;
+}
+
+.footer-admin-link:hover { color: var(--gold); }

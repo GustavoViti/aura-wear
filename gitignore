@@ -1,0 +1,13 @@
+# variáveis de ambiente
+.env
+.env.local
+
+# config com as chaves reais do Supabase (o template config.example.js fica versionado)
+config.js
+
+# sistema
+.DS_Store
+Thumbs.db
+
+# dependências (caso o projeto ganhe tooling no futuro)
+node_modules/

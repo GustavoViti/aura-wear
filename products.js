@@ -1,18 +1,19 @@
 /*
-  Dados mockados do catálogo.
-  Estrutura pensada para bater com o que a futura página de admin vai gerar:
-  cada produto tem id, nome, categoria, preço (em centavos), descrição curta,
-  destaque (featured) e uma cor/monograma usados como placeholder visual
-  enquanto não há fotos reais de produto.
+  Catálogo local — usado como FALLBACK quando o Supabase não está
+  configurado (sem config.js) ou a consulta falha/retorna vazia.
+  Quando o Supabase responde com produtos, catalog-loader.js sobrescreve
+  a variável PRODUCTS com os dados do banco, no mesmo formato abaixo.
+  Isso mantém a home funcionando mesmo offline ou antes de configurar as chaves.
 */
 
 const CATEGORIES = [
   { id: "vestidos", label: "Vestidos", glyph: "V" },
   { id: "casacos", label: "Casacos & Blazers", glyph: "C" },
   { id: "bolsas", label: "Bolsas", glyph: "B" },
+  { id: "acessorios", label: "Acessórios", glyph: "A" },
 ];
 
-const PRODUCTS = [
+let PRODUCTS = [
   {
     id: "p01",
     name: "Vestido Constance",

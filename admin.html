@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Aura Wear</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Jost:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body class="admin-body">
+
+<div class="toast" id="toast" aria-live="polite"></div>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="index.html" class="wordmark">AURA WEAR<span class="dot">.</span></a>
+    <span class="admin-tag">Admin</span>
+    <a href="index.html" class="admin-back">Ver loja →</a>
+  </div>
+</header>
+
+<main class="admin-main">
+
+  <div class="admin-banner" id="configBanner" hidden>
+    <p>
+      O Supabase ainda não está configurado. Copie <code>config.example.js</code> para
+      <code>config.js</code>, preencha suas chaves e rode o <code>schema.sql</code> no seu projeto
+      antes de cadastrar produtos.
+    </p>
+  </div>
+
+  <section class="admin-form-section">
+    <div class="section-head">
+      <p class="eyebrow" id="formEyebrow">Novo item</p>
+      <h2 id="formTitle">Cadastrar produto</h2>
+    </div>
+
+    <form id="productForm" class="admin-form" novalidate>
+      <div class="field-row">
+        <label>Nome do produto
+          <input type="text" name="name" required placeholder="Vestido Constance">
+        </label>
+      </div>
+
+      <div class="field-row two">
+        <label>Categoria
+          <select name="category" required id="categorySelect"></select>
+        </label>
+        <label>Preço (R$)
+          <input type="text" name="price" inputmode="decimal" required placeholder="389,00">
+        </label>
+      </div>
+
+      <div class="field-row">
+        <label>Descrição curta
+          <textarea name="description" rows="2" placeholder="Alfaiataria fluida em tafetá, comprimento midi."></textarea>
+        </label>
+      </div>
+
+      <div class="field-row">
+        <span class="field-label">Cor do card (placeholder visual)</span>
+        <div class="swatch-picker" id="swatchPicker">
+          <label class="swatch-option" data-swatch="wine">
+            <input type="radio" name="swatch" value="wine" checked>
+            <span class="swatch-dot swatch-wine"></span>
+          </label>
+          <label class="swatch-option" data-swatch="ink">
+            <input type="radio" name="swatch" value="ink">
+            <span class="swatch-dot swatch-ink"></span>
+          </label>
+          <label class="swatch-option" data-swatch="blush">
+            <input type="radio" name="swatch" value="blush">
+            <span class="swatch-dot swatch-blush"></span>
+          </label>
+          <label class="swatch-option" data-swatch="gold">
+            <input type="radio" name="swatch" value="gold">
+            <span class="swatch-dot swatch-gold"></span>
+          </label>
+        </div>
+      </div>
+
+      <label class="checkbox-row">
+        <input type="checkbox" name="featured">
+        <span>Marcar como destaque (badge "XOXO" na vitrine)</span>
+      </label>
+
+      <div class="admin-form-actions">
+        <button type="button" class="btn-outline" id="cancelEdit" hidden>Cancelar edição</button>
+        <button type="submit" class="btn-gold" id="submitBtn">Cadastrar produto</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="admin-list-section">
+    <div class="section-head">
+      <p class="eyebrow">Catálogo atual</p>
+      <h2>Produtos cadastrados</h2>
+    </div>
+
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Nome</th>
+            <th>Categoria</th>
+            <th>Preço</th>
+            <th>Destaque</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="productTableBody"></tbody>
+      </table>
+      <p class="admin-empty" id="adminEmpty" hidden>Nenhum produto cadastrado ainda.</p>
+    </div>
+  </section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="supabase-client.js"></script>
+<script src="products.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>

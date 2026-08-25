@@ -391,8 +391,9 @@
     });
   }
 
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("DOMContentLoaded", async () => {
     renderTicker();
+    if (typeof loadCatalog === "function") await loadCatalog();
     renderCategories();
     renderProducts();
     renderCartDrawer();
