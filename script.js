@@ -1,9 +1,9 @@
 (function () {
   "use strict";
 
-  const priceFormatter = new Intl.NumberFormat("pt-BR", {
+  const priceFormatter = new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "BRL",
+    currency: "USD",
   });
 
   let activeCategory = "todos";

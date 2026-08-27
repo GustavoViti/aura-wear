@@ -1,9 +1,9 @@
 (function () {
   "use strict";
 
-  const priceFormatter = new Intl.NumberFormat("pt-BR", {
+  const priceFormatter = new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "BRL",
+    currency: "USD",
   });
 
   let editingId = null;
@@ -14,9 +14,9 @@
     return priceFormatter.format(cents / 100);
   }
 
-  /* Converte "389,00" ou "389.00" ou "389" em centavos (38900) */
+  /* Converte "389.00", "1,299.00" ou "389" (formato americano) em centavos */
   function parsePriceToCents(raw) {
-    const normalized = raw.trim().replace(/\./g, "").replace(",", ".");
+    const normalized = raw.trim().replace(/,/g, "");
     const value = parseFloat(normalized);
     if (isNaN(value) || value < 0) return null;
     return Math.round(value * 100);
@@ -187,7 +187,7 @@
     const form = document.getElementById("productForm");
     form.elements.name.value = product.name;
     form.elements.category.value = product.category;
-    form.elements.price.value = (product.price_cents / 100).toFixed(2).replace(".", ",");
+    form.elements.price.value = (product.price_cents / 100).toFixed(2);
     form.elements.description.value = product.description || "";
     form.elements.featured.checked = !!product.featured;
 
