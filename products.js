@@ -13,6 +13,7 @@ const CATEGORIES = [
   { id: "vestidos-blusas", label: "Vestidos & Blusas", glyph: "V" },
   { id: "Blazers-casacos", label: "Blazers & Casacos", glyph: "B" },
   { id: "Acessorios", label: "Acessórios", glyph: "A" },
+  { id: "Bolsas", label: "Bolsas", glyph: "B" },
 ];
 
 let PRODUCTS = [
