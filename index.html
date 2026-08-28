@@ -11,6 +11,17 @@
 </head>
 <body>
 
+<div class="preloader" id="preloader" aria-hidden="true">
+  <div class="preloader-mark">
+    <span>A</span><span>U</span><span>R</span><span>A</span><span class="preloader-space"></span><span>W</span><span>E</span><span>A</span><span>R</span><span class="preloader-dot">.</span>
+  </div>
+</div>
+
+<div class="scroll-progress"><div class="scroll-progress-bar" id="scrollProgressBar"></div></div>
+
+<div class="cursor-dot" id="cursorDot"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
 <div class="toast" id="toast" aria-live="polite"></div>
 <div class="overlay" id="overlay"></div>
 
@@ -92,7 +103,7 @@
   <div class="drawer-foot">
     <div class="drawer-subtotal">
       <span>Subtotal</span>
-      <span id="cartSubtotal">R$ 0,00</span>
+      <span id="cartSubtotal">$0.00</span>
     </div>
     <button class="btn-gold full" id="checkoutBtn" disabled>Finalizar compra</button>
   </div>
@@ -107,9 +118,9 @@
 
     <div class="step-indicator" id="stepIndicator">
       <div class="step-dot active" data-step="1"><span>1</span><label>Entrega</label></div>
-      <div class="step-line"></div>
+      <div class="step-line"><span class="step-line-fill" id="stepLine1"></span></div>
       <div class="step-dot" data-step="2"><span>2</span><label>Pagamento</label></div>
-      <div class="step-line"></div>
+      <div class="step-line"><span class="step-line-fill" id="stepLine2"></span></div>
       <div class="step-dot" data-step="3"><span>3</span><label>Confirmação</label></div>
     </div>
 
@@ -154,6 +165,32 @@
         </div>
 
         <div class="card-fields">
+          <div class="card-preview" id="cardPreview">
+            <div class="card-inner" id="cardInner">
+              <div class="card-face card-front">
+                <div class="card-top">
+                  <span class="card-brand">Aura Wear</span>
+                  <div class="card-chip"></div>
+                </div>
+                <div class="card-number" id="cardPreviewNumber">•••• •••• •••• ••••</div>
+                <div class="card-bottom">
+                  <div>
+                    <span class="card-label">Titular</span>
+                    <div class="card-value" id="cardPreviewName">NOME NO CARTÃO</div>
+                  </div>
+                  <div>
+                    <span class="card-label">Validade</span>
+                    <div class="card-value" id="cardPreviewExpiry">MM/AA</div>
+                  </div>
+                </div>
+              </div>
+              <div class="card-face card-back">
+                <div class="card-stripe"></div>
+                <div class="card-signature"><span id="cardPreviewCvv">•••</span></div>
+              </div>
+            </div>
+          </div>
+
           <div class="field-row">
             <label>Número do cartão
               <input type="text" name="cardNumber" inputmode="numeric" maxlength="19" placeholder="0000 0000 0000 0000">
@@ -191,18 +228,28 @@
           <p>Confirmando com a redação...</p>
         </div>
         <div class="confirm-success" id="confirmSuccess">
-          <svg class="check-svg" viewBox="0 0 60 60" width="64" height="64">
-            <circle class="check-circle" cx="30" cy="30" r="27" fill="none" stroke-width="1.5"/>
-            <path class="check-mark" d="M18 31 L26 39 L43 21" fill="none" stroke-width="2.5"/>
-          </svg>
+          <div class="confetti-stage" id="confettiStage">
+            <svg class="check-svg" viewBox="0 0 60 60" width="64" height="64">
+              <circle class="check-ping" cx="30" cy="30" r="27" fill="none" stroke-width="1"/>
+              <circle class="check-circle" cx="30" cy="30" r="27" fill="none" stroke-width="1.5"/>
+              <path class="check-mark" d="M18 31 L26 39 L43 21" fill="none" stroke-width="2.5"/>
+            </svg>
+          </div>
           <h3 class="checkout-title">Pedido confirmado.</h3>
           <p class="confirm-order">Pedido <span id="orderNumber">#AW-0000</span></p>
+          <div class="confirm-items" id="confirmItems"></div>
           <p class="confirm-copy">A redação já está de olho. Você vai receber os detalhes por e-mail — e sim, todo mundo vai comentar. XOXO.</p>
           <button class="btn-gold" id="continueShopping">Continuar comprando</button>
         </div>
       </div>
 
     </div>
+
+    <div class="promo-row" id="promoRow">
+      <input type="text" id="promoInput" placeholder="Código promocional" autocomplete="off">
+      <button type="button" class="btn-outline promo-btn" id="applyPromoBtn">Aplicar</button>
+    </div>
+    <p class="promo-feedback" id="promoFeedback"></p>
 
     <div class="cart-summary" id="checkoutSummary"></div>
   </div>
@@ -213,6 +260,7 @@
 <script src="supabase-client.js"></script>
 <script src="products.js"></script>
 <script src="catalog-loader.js"></script>
+<script src="effects.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

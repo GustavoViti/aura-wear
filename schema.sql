@@ -6,7 +6,7 @@
 create table if not exists products (
   id uuid primary key default gen_random_uuid(),
   name text not null,
-  category text not null check (category in ('saias-calcas', 'alfaiataria', 'blusas-tricos', 'sapatos', 'vestidos-blusas')),
+  category text not null check (category in ('saias-calcas', 'sapatos', 'vestidos-blusas', 'Blazers-casacos', 'Acessorios', 'Bolsas')),
   price_cents integer not null check (price_cents >= 0),
   description text,
   featured boolean not null default false,
@@ -18,9 +18,12 @@ create table if not exists products (
 -- Caso a tabela já existisse de uma versão anterior sem esta coluna.
 alter table products add column if not exists image_url text;
 
--- Migração das categorias antigas (vestidos/casacos/bolsas/acessorios) para
--- as novas, caso a tabela já tenha sido criada com o schema anterior.
--- Produtos com categoria fora do mapa abaixo caem em 'vestidos-blusas'.
+-- Migração das categorias de versões anteriores para as atuais, caso a
+-- tabela já tenha produtos cadastrados com nomes antigos. Cobre tanto a
+-- primeira versão (vestidos/casacos/bolsas/acessorios) quanto a versão
+-- intermediária (alfaiataria/blusas-tricos). Qualquer valor não mapeado
+-- cai em 'vestidos-blusas' — revise as categorias no admin depois de rodar,
+-- já que remapeamentos em cascata podem não refletir a intenção original.
 do $$
 begin
   if exists (
@@ -29,18 +32,20 @@ begin
   ) then
     update products set category = case category
       when 'vestidos' then 'vestidos-blusas'
-      when 'casacos' then 'alfaiataria'
-      when 'bolsas' then 'sapatos'
-      when 'acessorios' then 'blusas-tricos'
+      when 'casacos' then 'Blazers-casacos'
+      when 'alfaiataria' then 'Blazers-casacos'
+      when 'bolsas' then 'Bolsas'
+      when 'acessorios' then 'Acessorios'
+      when 'blusas-tricos' then 'vestidos-blusas'
       else category
     end
-    where category not in ('saias-calcas', 'alfaiataria', 'blusas-tricos', 'sapatos', 'vestidos-blusas');
+    where category not in ('saias-calcas', 'sapatos', 'vestidos-blusas', 'Blazers-casacos', 'Acessorios', 'Bolsas');
   end if;
 end $$;
 
 alter table products drop constraint if exists products_category_check;
 alter table products add constraint products_category_check
-  check (category in ('saias-calcas', 'alfaiataria', 'blusas-tricos', 'sapatos', 'vestidos-blusas'));
+  check (category in ('saias-calcas', 'sapatos', 'vestidos-blusas', 'Blazers-casacos', 'Acessorios', 'Bolsas'));
 
 alter table products enable row level security;
 

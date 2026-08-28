@@ -9,11 +9,11 @@
 
 const CATEGORIES = [
   { id: "saias-calcas", label: "Saias & Calças", glyph: "S" },
-  { id: "sapatos", label: "Sapatos", glyph: "S" },
+  { id: "sapatos", label: "Sapatos", glyph: "Z" },
   { id: "vestidos-blusas", label: "Vestidos & Blusas", glyph: "V" },
   { id: "Blazers-casacos", label: "Blazers & Casacos", glyph: "B" },
   { id: "Acessorios", label: "Acessórios", glyph: "A" },
-  { id: "Bolsas", label: "Bolsas", glyph: "B" },
+  { id: "Bolsas", label: "Bolsas", glyph: "L" },
 ];
 
 let PRODUCTS = [
@@ -40,7 +40,7 @@ let PRODUCTS = [
   {
     id: "p03",
     name: "Blazer St. Jude's",
-    category: "alfaiataria",
+    category: "Blazers-casacos",
     priceCents: 32900,
     description: "Corte reto, botões dourados, ombros estruturados.",
     featured: true,
@@ -50,7 +50,7 @@ let PRODUCTS = [
   {
     id: "p04",
     name: "Trench Lexington",
-    category: "alfaiataria",
+    category: "Blazers-casacos",
     priceCents: 38900,
     description: "Gabardine impermeável, cinto de amarrar.",
     featured: false,
@@ -60,7 +60,7 @@ let PRODUCTS = [
   {
     id: "p05",
     name: "Blusa Serena",
-    category: "blusas-tricos",
+    category: "vestidos-blusas",
     priceCents: 18900,
     description: "Seda fluida, gola em laço, para qualquer entrada.",
     featured: true,
@@ -70,7 +70,7 @@ let PRODUCTS = [
   {
     id: "p06",
     name: "Tricô Astor",
-    category: "blusas-tricos",
+    category: "vestidos-blusas",
     priceCents: 21900,
     description: "Malha canelada, gola alta, edição de inverno.",
     featured: false,
@@ -113,6 +113,46 @@ let PRODUCTS = [
     category: "vestidos-blusas",
     priceCents: 36900,
     description: "Xadrez príncipe de Gales, decote em V.",
+    featured: false,
+    swatch: "blush",
+    imageUrl: "",
+  },
+  {
+    id: "p11",
+    name: "Colar Sterling",
+    category: "Acessorios",
+    priceCents: 28900,
+    description: "Pérolas naturais, fecho em ouro 18k.",
+    featured: false,
+    swatch: "gold",
+    imageUrl: "",
+  },
+  {
+    id: "p12",
+    name: "Óculos Chuck",
+    category: "Acessorios",
+    priceCents: 32900,
+    description: "Armação em acetato, lentes degradê.",
+    featured: false,
+    swatch: "ink",
+    imageUrl: "",
+  },
+  {
+    id: "p13",
+    name: "Bolsa Astor",
+    category: "Bolsas",
+    priceCents: 94900,
+    description: "Couro estruturado, alça removível, fecho em metal dourado.",
+    featured: true,
+    swatch: "wine",
+    imageUrl: "",
+  },
+  {
+    id: "p14",
+    name: "Clutch Blair",
+    category: "Bolsas",
+    priceCents: 45900,
+    description: "Cetim bordado à mão, corrente fina.",
     featured: false,
     swatch: "blush",
     imageUrl: "",

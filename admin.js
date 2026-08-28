@@ -90,6 +90,7 @@
   }
 
 
+  let toastTimer = null;
   function showToast(message) {
     const toast = document.getElementById("toast");
     toast.textContent = message;
@@ -268,6 +269,12 @@
       form.elements.price.classList.remove("field-error");
     }
 
+    const validCategory = CATEGORIES.some((c) => c.id === category);
+    if (!validCategory) {
+      showToast("Categoria desatualizada — recarregue a página (Ctrl+F5) e tente de novo.");
+      return;
+    }
+
     if (hasError) {
       showToast("Confira os campos destacados.");
       return;
@@ -303,7 +310,11 @@
 
     if (error) {
       console.error(error);
-      showToast("Não foi possível salvar. Confira o console.");
+      if (error.code === "23514" && error.message.includes("category")) {
+        showToast("O banco ainda não tem as categorias novas — rode o schema.sql atualizado no Supabase.");
+      } else {
+        showToast("Não foi possível salvar. Confira o console.");
+      }
       submitBtn.textContent = editingId ? "Salvar alterações" : "Cadastrar produto";
       return;
     }

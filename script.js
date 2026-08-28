@@ -6,9 +6,17 @@
     currency: "USD",
   });
 
+  const PROMO_CODES = {
+    XOXO10: 0.1,
+    UPPEREAST: 0.15,
+  };
+
   let activeCategory = "todos";
-  let cart = []; // { id, name, price, qty, swatch }
+  let cart = []; // { id, name, priceCents, swatch, imageUrl, qty }
   let currentStep = 1;
+  let wishlist = new Set();
+  let appliedPromo = null; // { code, rate }
+  let lastConfirmedItems = [];
 
   function formatPrice(cents) {
     return priceFormatter.format(cents / 100);
@@ -85,6 +93,11 @@
         <article class="product-card" style="--i:${i}">
           <div class="product-swatch swatch-${p.swatch}">
             ${p.featured ? '<span class="featured-badge">XOXO</span>' : ""}
+            <button class="wish-btn${wishlist.has(p.id) ? " saved" : ""}" data-id="${p.id}" aria-label="Adicionar aos favoritos">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7">
+                <path d="M12 20s-7-4.35-9.5-8.5C.5 8 2 4 6 4c2 0 3.5 1.3 4 2.5C10.5 5.3 12 4 14 4c4 0 5.5 4 3.5 7.5C19 15.65 12 20 12 20z"/>
+              </svg>
+            </button>
             ${
               p.imageUrl
                 ? `<img class="product-photo" src="${p.imageUrl}" alt="${p.name}" loading="lazy">`
@@ -107,7 +120,31 @@
       btn.addEventListener("click", () => addToCart(btn.dataset.id));
     });
 
+    grid.querySelectorAll(".wish-btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleWishlist(btn.dataset.id, btn);
+      });
+    });
+
     observeReveal(grid.querySelectorAll(".product-card"));
+  }
+
+  function toggleWishlist(productId, btn) {
+    const product = PRODUCTS.find((p) => p.id === productId);
+    if (!product) return;
+
+    if (wishlist.has(productId)) {
+      wishlist.delete(productId);
+      btn.classList.remove("saved");
+      showToast(`"${product.name}" saiu da sua lista de desejos.`);
+    } else {
+      wishlist.add(productId);
+      btn.classList.remove("saved");
+      void btn.offsetWidth;
+      btn.classList.add("saved");
+      showToast(`"${product.name}" favoritado. Bom gosto. XOXO.`);
+    }
   }
 
   /* ============================================
@@ -269,7 +306,7 @@
   function openCheckout() {
     if (cart.length === 0) return;
     currentStep = 1;
-    goToStep(1);
+    goToStep(1, true);
     renderCheckoutSummary();
     document.getElementById("checkoutModal").classList.add("open");
     document.getElementById("overlay").classList.add("show");
@@ -281,11 +318,18 @@
     document.getElementById("overlay").classList.remove("show");
   }
 
-  function goToStep(step) {
+  function goToStep(step, skipAnimation) {
+    const direction = step > currentStep ? "right" : "left";
     currentStep = step;
 
     document.querySelectorAll(".step-panel").forEach((panel) => {
-      panel.classList.toggle("active", Number(panel.dataset.step) === step);
+      const isTarget = Number(panel.dataset.step) === step;
+      panel.classList.toggle("active", isTarget);
+      panel.classList.remove("slide-in-right", "slide-in-left");
+      if (isTarget && !skipAnimation) {
+        void panel.offsetWidth;
+        panel.classList.add(direction === "right" ? "slide-in-right" : "slide-in-left");
+      }
     });
 
     document.querySelectorAll(".step-dot").forEach((dot) => {
@@ -294,20 +338,70 @@
       dot.classList.toggle("done", dotStep < step);
     });
 
+    document.getElementById("stepLine1").classList.toggle("filled", step >= 2);
+    document.getElementById("stepLine2").classList.toggle("filled", step >= 3);
+
     document.getElementById("checkoutSummary").classList.toggle("hidden", step === 3);
+    document.getElementById("promoRow").classList.toggle("hidden", step === 3);
+    document.getElementById("promoFeedback").classList.toggle("hidden", step === 3);
+  }
+
+  function computeTotals() {
+    const subtotal = cartSubtotalCents();
+    const shipping = subtotal > 0 ? 2900 : 0;
+    const discount = appliedPromo ? Math.round(subtotal * appliedPromo.rate) : 0;
+    const total = Math.max(subtotal + shipping - discount, 0);
+    return { subtotal, shipping, discount, total };
   }
 
   function renderCheckoutSummary() {
     const el = document.getElementById("checkoutSummary");
-    const subtotal = cartSubtotalCents();
-    const shipping = subtotal > 0 ? 2900 : 0;
-    const total = subtotal + shipping;
+    const { subtotal, shipping, discount, total } = computeTotals();
 
     el.innerHTML = `
       <div class="summary-row"><span>Subtotal</span><span>${formatPrice(subtotal)}</span></div>
+      ${
+        discount > 0
+          ? `<div class="summary-row discount"><span>Cupom ${appliedPromo.code}</span><span>−${formatPrice(discount)}</span></div>`
+          : ""
+      }
       <div class="summary-row"><span>Frete</span><span>${formatPrice(shipping)}</span></div>
       <div class="summary-row total"><span>Total</span><span>${formatPrice(total)}</span></div>
     `;
+  }
+
+  function applyPromo() {
+    const input = document.getElementById("promoInput");
+    const feedback = document.getElementById("promoFeedback");
+    const code = input.value.trim().toUpperCase();
+
+    if (!code) return;
+
+    if (PROMO_CODES[code]) {
+      appliedPromo = { code, rate: PROMO_CODES[code] };
+      feedback.textContent = `Cupom aplicado — ${Math.round(appliedPromo.rate * 100)}% de desconto. XOXO.`;
+      feedback.className = "promo-feedback success";
+      input.disabled = true;
+      document.getElementById("applyPromoBtn").textContent = "Aplicado";
+      document.getElementById("applyPromoBtn").disabled = true;
+    } else {
+      feedback.textContent = "Código inválido — confira e tente de novo.";
+      feedback.className = "promo-feedback error";
+    }
+
+    renderCheckoutSummary();
+  }
+
+  function resetPromo() {
+    appliedPromo = null;
+    const input = document.getElementById("promoInput");
+    const feedback = document.getElementById("promoFeedback");
+    input.value = "";
+    input.disabled = false;
+    feedback.textContent = "";
+    feedback.className = "promo-feedback";
+    document.getElementById("applyPromoBtn").textContent = "Aplicar";
+    document.getElementById("applyPromoBtn").disabled = false;
   }
 
   function validateForm(form) {
@@ -320,11 +414,84 @@
     return valid;
   }
 
+  /* ============================================
+     CARD PREVIEW (checkout)
+     ============================================ */
+  function maskCardNumber(digits) {
+    const padded = (digits + "••••••••••••••••").slice(0, 16);
+    return padded.match(/.{1,4}/g).join(" ");
+  }
+
+  function initCardPreview() {
+    const form = document.getElementById("paymentForm");
+    const numberInput = form.elements.cardNumber;
+    const nameInput = form.elements.cardName;
+    const expiryInput = form.elements.cardExpiry;
+    const cvvInput = form.elements.cardCvv;
+    const cardInner = document.getElementById("cardInner");
+
+    numberInput.addEventListener("input", (e) => {
+      const digits = e.target.value.replace(/\D/g, "").slice(0, 16);
+      e.target.value = digits.match(/.{1,4}/g)?.join(" ") || "";
+      document.getElementById("cardPreviewNumber").textContent = maskCardNumber(digits);
+    });
+
+    nameInput.addEventListener("input", (e) => {
+      const value = e.target.value.toUpperCase();
+      document.getElementById("cardPreviewName").textContent = value || "NOME NO CARTÃO";
+    });
+
+    expiryInput.addEventListener("input", (e) => {
+      let digits = e.target.value.replace(/\D/g, "").slice(0, 4);
+      if (digits.length >= 3) digits = digits.slice(0, 2) + "/" + digits.slice(2);
+      e.target.value = digits;
+      document.getElementById("cardPreviewExpiry").textContent = digits || "MM/AA";
+    });
+
+    cvvInput.addEventListener("input", (e) => {
+      const digits = e.target.value.replace(/\D/g, "").slice(0, 4);
+      e.target.value = digits;
+      document.getElementById("cardPreviewCvv").textContent = ("•••" + digits).slice(-Math.max(digits.length, 3));
+    });
+
+    cvvInput.addEventListener("focus", () => cardInner.classList.add("flipped"));
+    cvvInput.addEventListener("blur", () => cardInner.classList.remove("flipped"));
+  }
+
+  /* ============================================
+     CONFIRMATION
+     ============================================ */
+  function renderConfirmItems(items) {
+    const el = document.getElementById("confirmItems");
+    el.innerHTML = items
+      .map((item) => `<div class="confirm-item-row"><span>${item.qty}× ${item.name}</span><span>${formatPrice(item.priceCents * item.qty)}</span></div>`)
+      .join("");
+  }
+
+  function spawnConfetti() {
+    const stage = document.getElementById("confettiStage");
+    stage.querySelectorAll(".spark").forEach((el) => el.remove());
+
+    const count = 14;
+    for (let i = 0; i < count; i++) {
+      const spark = document.createElement("span");
+      spark.className = "spark" + (i % 3 === 0 ? " wine" : "");
+      const angle = (Math.PI * 2 * i) / count + Math.random() * 0.3;
+      const distance = 40 + Math.random() * 30;
+      spark.style.setProperty("--tx", `${Math.cos(angle) * distance}px`);
+      spark.style.setProperty("--ty", `${Math.sin(angle) * distance}px`);
+      spark.style.animationDelay = `${Math.random() * 0.15}s`;
+      stage.appendChild(spark);
+    }
+  }
+
   function runConfirmation() {
     const loading = document.getElementById("confirmLoading");
     const success = document.getElementById("confirmSuccess");
     loading.classList.add("show");
     success.classList.remove("show");
+
+    lastConfirmedItems = cart.map((item) => ({ ...item }));
 
     setTimeout(() => {
       loading.classList.remove("show");
@@ -332,11 +499,13 @@
 
       const orderNum = "AW-" + Math.floor(1000 + Math.random() * 9000);
       document.getElementById("orderNumber").textContent = "#" + orderNum;
+      renderConfirmItems(lastConfirmedItems);
+      spawnConfetti();
 
-      // restart checkmark draw animation
       const circle = document.querySelector(".check-circle");
       const mark = document.querySelector(".check-mark");
-      [circle, mark].forEach((el) => {
+      const ping = document.querySelector(".check-ping");
+      [circle, mark, ping].forEach((el) => {
         el.style.animation = "none";
         void el.offsetWidth;
         el.style.animation = "";
@@ -349,9 +518,14 @@
     updateBagCount();
     renderCartDrawer();
     closeCheckout();
-    goToStep(1);
+    goToStep(1, true);
+    resetPromo();
     document.getElementById("shippingForm").reset();
     document.getElementById("paymentForm").reset();
+    document.getElementById("cardPreviewNumber").textContent = "•••• •••• •••• ••••";
+    document.getElementById("cardPreviewName").textContent = "NOME NO CARTÃO";
+    document.getElementById("cardPreviewExpiry").textContent = "MM/AA";
+    document.getElementById("cardPreviewCvv").textContent = "•••";
   }
 
   /* ============================================
@@ -363,6 +537,14 @@
     document.getElementById("closeCheckout").addEventListener("click", closeCheckout);
     document.getElementById("checkoutBtn").addEventListener("click", openCheckout);
     document.getElementById("continueShopping").addEventListener("click", resetCheckoutAndCart);
+    document.getElementById("applyPromoBtn").addEventListener("click", applyPromo);
+
+    document.getElementById("promoInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        applyPromo();
+      }
+    });
 
     document.getElementById("overlay").addEventListener("click", () => {
       closeDrawer();
@@ -406,6 +588,7 @@
     renderCategories();
     renderProducts();
     renderCartDrawer();
+    initCardPreview();
     bindEvents();
   });
 })();
