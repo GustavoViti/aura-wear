@@ -230,12 +230,16 @@ img, svg { display: block; max-width: 100%; }
 
 .hero-frame {
   width: 100%;
-  max-width: 260px;
-  aspect-ratio: 200 / 260;
+  max-width: 340px;
   background: var(--card);
   border: 1px solid var(--line);
-  color: var(--wine);
-  padding: var(--space-2);
+  overflow: hidden;
+}
+
+.hero-photo {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 
 .hero-caption {
@@ -507,11 +511,15 @@ a:focus-visible, button:focus-visible {
   to { opacity: 1; transform: translateY(0); }
 }
 
-.hero-dress-path {
-  stroke-dasharray: 400;
-  stroke-dashoffset: 400;
-  animation: drawPath 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  animation-delay: 0.5s;
+.hero-photo {
+  opacity: 0;
+  transform: scale(1.08);
+  animation: heroPhotoIn 1.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: 0.4s;
+}
+
+@keyframes heroPhotoIn {
+  to { opacity: 1; transform: scale(1); }
 }
 
 @keyframes drawPath {
@@ -595,7 +603,7 @@ a:focus-visible, button:focus-visible {
 
 @media (prefers-reduced-motion: reduce) {
   .reveal-load, .category-card, .product-card { animation: none !important; opacity: 1 !important; transform: none !important; transition: none !important; }
-  .hero-dress-path { stroke-dashoffset: 0; animation: none; }
+  .hero-photo { opacity: 1; transform: none; animation: none; }
   .bag-btn.bump, .bag-count.bump { animation: none; }
 }
 
