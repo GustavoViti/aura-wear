@@ -9,10 +9,10 @@
 
 const CATEGORIES = [
   { id: "saias-calcas", label: "Saias & Calças", glyph: "S" },
-  { id: "alfaiataria", label: "Alfaiataria", glyph: "A" },
   { id: "sapatos", label: "Sapatos", glyph: "S" },
   { id: "vestidos-blusas", label: "Vestidos & Blusas", glyph: "V" },
   { id: "Blazers-casacos", label: "Blazers & Casacos", glyph: "B" },
+  { id: "Acessorios", label: "Acessórios", glyph: "A" },
 ];
 
 let PRODUCTS = [
