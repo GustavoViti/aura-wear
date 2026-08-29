@@ -27,6 +27,7 @@ async function loadCatalog() {
         featured: !!row.featured,
         swatch: row.swatch || "ink",
         imageUrl: row.image_url || "",
+        inEdit: !!row.in_edit,
       }));
     }
   } catch (err) {

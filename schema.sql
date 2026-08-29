@@ -12,11 +12,13 @@ create table if not exists products (
   featured boolean not null default false,
   swatch text not null default 'ink' check (swatch in ('wine', 'ink', 'blush', 'gold')),
   image_url text,
+  in_edit boolean not null default false,
   created_at timestamptz not null default now()
 );
 
 -- Caso a tabela já existisse de uma versão anterior sem esta coluna.
 alter table products add column if not exists image_url text;
+alter table products add column if not exists in_edit boolean not null default false;
 
 -- Migração das categorias de versões anteriores para as atuais, caso a
 -- tabela já tenha produtos cadastrados com nomes antigos. Cobre tanto a

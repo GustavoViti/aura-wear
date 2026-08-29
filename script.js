@@ -100,6 +100,56 @@
     return list;
   }
 
+  function productCardHTML(p, i) {
+    return `
+      <article class="product-card" style="--i:${i}">
+        <div class="product-swatch swatch-${p.swatch}">
+          ${p.featured ? '<span class="featured-badge">XOXO</span>' : ""}
+          <button class="wish-btn${wishlist.has(p.id) ? " saved" : ""}" data-id="${p.id}" aria-label="Adicionar aos favoritos">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7">
+              <path d="M12 20s-7-4.35-9.5-8.5C.5 8 2 4 6 4c2 0 3.5 1.3 4 2.5C10.5 5.3 12 4 14 4c4 0 5.5 4 3.5 7.5C19 15.65 12 20 12 20z"/>
+            </svg>
+          </button>
+          ${
+            p.imageUrl
+              ? `<img class="product-photo" src="${p.imageUrl}" alt="${p.name}" loading="lazy">`
+              : `<span class="monogram">${p.name.charAt(0)}</span>`
+          }
+          <button class="quick-view-btn" data-id="${p.id}">Visualização rápida</button>
+        </div>
+        <div class="product-info">
+          <h3 class="product-name">${p.name}</h3>
+          <p class="product-desc">${p.description}</p>
+          <div class="product-footer">
+            <span class="product-price">${formatPrice(p.priceCents)}</span>
+            <button class="add-btn" data-id="${p.id}">Adicionar</button>
+          </div>
+        </div>
+      </article>`;
+  }
+
+  function bindProductCardEvents(container) {
+    container.querySelectorAll(".add-btn").forEach((btn) => {
+      btn.addEventListener("click", () => addToCart(btn.dataset.id));
+    });
+
+    container.querySelectorAll(".wish-btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleWishlist(btn.dataset.id, btn);
+      });
+    });
+
+    container.querySelectorAll(".quick-view-btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        openQuickView(btn.dataset.id);
+      });
+    });
+
+    observeReveal(container.querySelectorAll(".product-card"));
+  }
+
   function renderProducts() {
     const grid = document.getElementById("productGrid");
     const title = document.getElementById("catalogTitle");
@@ -128,71 +178,52 @@
     emptyState.hidden = filtered.length > 0;
     grid.style.display = filtered.length > 0 ? "" : "none";
 
-    grid.innerHTML = filtered
-      .map(
-        (p, i) => `
-        <article class="product-card" style="--i:${i}">
-          <div class="product-swatch swatch-${p.swatch}">
-            ${p.featured ? '<span class="featured-badge">XOXO</span>' : ""}
-            <button class="wish-btn${wishlist.has(p.id) ? " saved" : ""}" data-id="${p.id}" aria-label="Adicionar aos favoritos">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7">
-                <path d="M12 20s-7-4.35-9.5-8.5C.5 8 2 4 6 4c2 0 3.5 1.3 4 2.5C10.5 5.3 12 4 14 4c4 0 5.5 4 3.5 7.5C19 15.65 12 20 12 20z"/>
-              </svg>
-            </button>
-            ${
-              p.imageUrl
-                ? `<img class="product-photo" src="${p.imageUrl}" alt="${p.name}" loading="lazy">`
-                : `<span class="monogram">${p.name.charAt(0)}</span>`
-            }
-            <button class="quick-view-btn" data-id="${p.id}">Visualização rápida</button>
-          </div>
-          <div class="product-info">
-            <h3 class="product-name">${p.name}</h3>
-            <p class="product-desc">${p.description}</p>
-            <div class="product-footer">
-              <span class="product-price">${formatPrice(p.priceCents)}</span>
-              <button class="add-btn" data-id="${p.id}">Adicionar</button>
-            </div>
-          </div>
-        </article>`
-      )
-      .join("");
+    grid.innerHTML = filtered.map((p, i) => productCardHTML(p, i)).join("");
+    bindProductCardEvents(grid);
+  }
 
-    grid.querySelectorAll(".add-btn").forEach((btn) => {
-      btn.addEventListener("click", () => addToCart(btn.dataset.id));
-    });
+  function renderEditorial() {
+    const grid = document.getElementById("editorialGrid");
+    const empty = document.getElementById("editorialEmpty");
 
-    grid.querySelectorAll(".wish-btn").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        toggleWishlist(btn.dataset.id, btn);
-      });
-    });
+    const picks = PRODUCTS.filter((p) => p.inEdit).slice(0, 3);
 
-    grid.querySelectorAll(".quick-view-btn").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        openQuickView(btn.dataset.id);
-      });
-    });
+    if (picks.length === 0) {
+      grid.innerHTML = "";
+      empty.hidden = false;
+      return;
+    }
 
-    observeReveal(grid.querySelectorAll(".product-card"));
+    empty.hidden = true;
+    grid.innerHTML = picks.map((p, i) => productCardHTML(p, i)).join("");
+    bindProductCardEvents(grid);
   }
 
   function toggleWishlist(productId, btn) {
     const product = PRODUCTS.find((p) => p.id === productId);
     if (!product) return;
 
-    if (wishlist.has(productId)) {
-      wishlist.delete(productId);
-      btn.classList.remove("saved");
-      showToast(`"${product.name}" saiu da sua lista de desejos.`);
-    } else {
+    const saving = !wishlist.has(productId);
+    if (saving) {
       wishlist.add(productId);
+    } else {
+      wishlist.delete(productId);
+    }
+
+    document.querySelectorAll(`.wish-btn[data-id="${productId}"]`).forEach((el) => {
+      el.classList.toggle("saved", saving);
+    });
+    if (quickViewProductId === productId) {
+      document.getElementById("qvWishBtn").classList.toggle("saved", saving);
+    }
+
+    if (saving) {
       btn.classList.remove("saved");
       void btn.offsetWidth;
       btn.classList.add("saved");
       showToast(`"${product.name}" favoritado. Bom gosto. XOXO.`);
+    } else {
+      showToast(`"${product.name}" saiu da sua lista de desejos.`);
     }
   }
 
@@ -714,15 +745,6 @@
       renderProducts();
     });
 
-    document.querySelectorAll(".editorial-link").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        activeCategory = btn.dataset.category;
-        renderCategories();
-        renderProducts();
-        document.getElementById("vitrine").scrollIntoView({ behavior: "smooth", block: "start" });
-      });
-    });
-
     document.getElementById("newsletterForm").addEventListener("submit", handleNewsletterSubmit);
 
     document.getElementById("closeQuickview").addEventListener("click", closeQuickView);
@@ -784,6 +806,7 @@
     if (typeof loadCatalog === "function") await loadCatalog();
     renderCategories();
     renderProducts();
+    renderEditorial();
     renderCartDrawer();
     initCardPreview();
     bindEvents();

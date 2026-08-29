@@ -26,6 +26,7 @@ let PRODUCTS = [
     featured: true,
     swatch: "wine",
     imageUrl: "",
+    inEdit: true,
   },
   {
     id: "p02",
@@ -36,6 +37,7 @@ let PRODUCTS = [
     featured: false,
     swatch: "ink",
     imageUrl: "",
+    inEdit: false,
   },
   {
     id: "p03",
@@ -46,6 +48,7 @@ let PRODUCTS = [
     featured: true,
     swatch: "ink",
     imageUrl: "",
+    inEdit: true,
   },
   {
     id: "p04",
@@ -56,6 +59,7 @@ let PRODUCTS = [
     featured: false,
     swatch: "gold",
     imageUrl: "",
+    inEdit: false,
   },
   {
     id: "p05",
@@ -66,6 +70,7 @@ let PRODUCTS = [
     featured: true,
     swatch: "blush",
     imageUrl: "",
+    inEdit: false,
   },
   {
     id: "p06",
@@ -76,6 +81,7 @@ let PRODUCTS = [
     featured: false,
     swatch: "wine",
     imageUrl: "",
+    inEdit: false,
   },
   {
     id: "p07",
@@ -86,6 +92,7 @@ let PRODUCTS = [
     featured: false,
     swatch: "ink",
     imageUrl: "",
+    inEdit: false,
   },
   {
     id: "p08",
@@ -96,6 +103,7 @@ let PRODUCTS = [
     featured: true,
     swatch: "gold",
     imageUrl: "",
+    inEdit: false,
   },
   {
     id: "p09",
@@ -106,6 +114,7 @@ let PRODUCTS = [
     featured: true,
     swatch: "wine",
     imageUrl: "",
+    inEdit: false,
   },
   {
     id: "p10",
@@ -116,6 +125,7 @@ let PRODUCTS = [
     featured: false,
     swatch: "blush",
     imageUrl: "",
+    inEdit: false,
   },
   {
     id: "p11",
@@ -126,6 +136,7 @@ let PRODUCTS = [
     featured: false,
     swatch: "gold",
     imageUrl: "",
+    inEdit: true,
   },
   {
     id: "p12",
@@ -136,6 +147,7 @@ let PRODUCTS = [
     featured: false,
     swatch: "ink",
     imageUrl: "",
+    inEdit: false,
   },
   {
     id: "p13",
@@ -146,6 +158,7 @@ let PRODUCTS = [
     featured: true,
     swatch: "wine",
     imageUrl: "",
+    inEdit: false,
   },
   {
     id: "p14",
@@ -156,6 +169,7 @@ let PRODUCTS = [
     featured: false,
     swatch: "blush",
     imageUrl: "",
+    inEdit: false,
   },
 ];
 

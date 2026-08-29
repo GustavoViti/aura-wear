@@ -156,6 +156,7 @@
           <td>${categoryLabel(p.category)}</td>
           <td>${formatPrice(p.price_cents)}</td>
           <td>${p.featured ? '<span class="badge-featured">XOXO</span>' : '<span class="badge-none">—</span>'}</td>
+          <td>${p.in_edit ? '<span class="badge-featured">The Edit</span>' : '<span class="badge-none">—</span>'}</td>
           <td>
             <div class="row-actions">
               <button class="row-edit" data-id="${p.id}">Editar</button>
@@ -191,6 +192,7 @@
     form.elements.price.value = (product.price_cents / 100).toFixed(2);
     form.elements.description.value = product.description || "";
     form.elements.featured.checked = !!product.featured;
+    form.elements.inEdit.checked = !!product.in_edit;
 
     const swatchInput = form.querySelector(`input[name="swatch"][value="${product.swatch}"]`);
     if (swatchInput) swatchInput.checked = true;
@@ -256,6 +258,7 @@
     const priceCents = parsePriceToCents(form.elements.price.value);
     const description = form.elements.description.value.trim();
     const featured = form.elements.featured.checked;
+    const inEdit = form.elements.inEdit.checked;
     const swatch = form.querySelector('input[name="swatch"]:checked').value;
 
     let hasError = false;
@@ -280,7 +283,7 @@
       return;
     }
 
-    const payload = { name, category, price_cents: priceCents, description, featured, swatch };
+    const payload = { name, category, price_cents: priceCents, description, featured, swatch, in_edit: inEdit };
     const submitBtn = document.getElementById("submitBtn");
     submitBtn.disabled = true;
     submitBtn.textContent = selectedFile ? "Enviando foto..." : (editingId ? "Salvando..." : "Cadastrando...");
