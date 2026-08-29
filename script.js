@@ -12,11 +12,15 @@
   };
 
   let activeCategory = "todos";
+  let searchQuery = "";
+  let sortOrder = "featured";
   let cart = []; // { id, name, priceCents, swatch, imageUrl, qty }
   let currentStep = 1;
   let wishlist = new Set();
   let appliedPromo = null; // { code, rate }
   let lastConfirmedItems = [];
+  let quickViewProductId = null;
+  let quickViewQty = 1;
 
   function formatPrice(cents) {
     return priceFormatter.format(cents / 100);
@@ -68,15 +72,42 @@
   /* ============================================
      PRODUCTS
      ============================================ */
+  function filterAndSortProducts() {
+    let list =
+      activeCategory === "todos" ? [...PRODUCTS] : PRODUCTS.filter((p) => p.category === activeCategory);
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      list = list.filter(
+        (p) => p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q)
+      );
+    }
+
+    switch (sortOrder) {
+      case "price-asc":
+        list.sort((a, b) => a.priceCents - b.priceCents);
+        break;
+      case "price-desc":
+        list.sort((a, b) => b.priceCents - a.priceCents);
+        break;
+      case "name-asc":
+        list.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      default:
+        list.sort((a, b) => (b.featured === true) - (a.featured === true));
+    }
+
+    return list;
+  }
+
   function renderProducts() {
     const grid = document.getElementById("productGrid");
     const title = document.getElementById("catalogTitle");
     const eyebrow = document.getElementById("catalogEyebrow");
+    const searchStatus = document.getElementById("searchStatus");
+    const emptyState = document.getElementById("emptyState");
 
-    const filtered =
-      activeCategory === "todos"
-        ? PRODUCTS
-        : PRODUCTS.filter((p) => p.category === activeCategory);
+    const filtered = filterAndSortProducts();
 
     if (activeCategory === "todos") {
       eyebrow.textContent = "Todas as fontes";
@@ -86,6 +117,16 @@
       eyebrow.textContent = "Filtrando por";
       title.textContent = cat ? cat.label : "A vitrine";
     }
+
+    if (searchQuery.trim()) {
+      searchStatus.hidden = false;
+      searchStatus.textContent = `Resultados para "${searchQuery.trim()}" (${filtered.length})`;
+    } else {
+      searchStatus.hidden = true;
+    }
+
+    emptyState.hidden = filtered.length > 0;
+    grid.style.display = filtered.length > 0 ? "" : "none";
 
     grid.innerHTML = filtered
       .map(
@@ -103,6 +144,7 @@
                 ? `<img class="product-photo" src="${p.imageUrl}" alt="${p.name}" loading="lazy">`
                 : `<span class="monogram">${p.name.charAt(0)}</span>`
             }
+            <button class="quick-view-btn" data-id="${p.id}">Visualização rápida</button>
           </div>
           <div class="product-info">
             <h3 class="product-name">${p.name}</h3>
@@ -124,6 +166,13 @@
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
         toggleWishlist(btn.dataset.id, btn);
+      });
+    });
+
+    grid.querySelectorAll(".quick-view-btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        openQuickView(btn.dataset.id);
       });
     });
 
@@ -164,6 +213,103 @@
 
   function observeReveal(elements) {
     elements.forEach((el) => revealObserver.observe(el));
+  }
+
+  /* ============================================
+     QUICK VIEW
+     ============================================ */
+  function openQuickView(productId) {
+    const product = PRODUCTS.find((p) => p.id === productId);
+    if (!product) return;
+
+    quickViewProductId = productId;
+    quickViewQty = 1;
+
+    const cat = CATEGORIES.find((c) => c.id === product.category);
+    document.getElementById("quickviewCategory").textContent = cat ? cat.label : "";
+    document.getElementById("quickviewName").textContent = product.name;
+    document.getElementById("quickviewPrice").textContent = formatPrice(product.priceCents);
+    document.getElementById("quickviewDesc").textContent = product.description;
+    document.getElementById("qvQty").textContent = quickViewQty;
+
+    const swatch = document.getElementById("quickviewSwatch");
+    swatch.className = `product-swatch swatch-${product.swatch}`;
+    if (product.imageUrl) {
+      swatch.innerHTML = `<img class="product-photo" src="${product.imageUrl}" alt="${product.name}">`;
+    } else {
+      swatch.innerHTML = `<span class="monogram">${product.name.charAt(0)}</span>`;
+    }
+
+    const wishBtn = document.getElementById("qvWishBtn");
+    wishBtn.classList.toggle("saved", wishlist.has(productId));
+
+    document.getElementById("quickviewModal").classList.add("open");
+    syncOverlay();
+  }
+
+  function closeQuickView() {
+    document.getElementById("quickviewModal").classList.remove("open");
+    syncOverlay();
+    quickViewProductId = null;
+  }
+
+  function changeQuickViewQty(delta) {
+    quickViewQty = Math.max(1, quickViewQty + delta);
+    document.getElementById("qvQty").textContent = quickViewQty;
+  }
+
+  function addQuickViewToCart() {
+    if (!quickViewProductId) return;
+    for (let i = 0; i < quickViewQty; i++) addToCart(quickViewProductId);
+    closeQuickView();
+    openDrawer();
+  }
+
+  /* ============================================
+     MOBILE MENU
+     ============================================ */
+  function toggleMobileMenu() {
+    const nav = document.getElementById("mobileNav");
+    const btn = document.getElementById("menuToggle");
+    const isOpen = nav.classList.toggle("open");
+    btn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+  }
+
+  function closeMobileMenu() {
+    document.getElementById("mobileNav").classList.remove("open");
+    document.getElementById("menuToggle").setAttribute("aria-expanded", "false");
+  }
+
+  /* ============================================
+     SEARCH
+     ============================================ */
+  function toggleSearch() {
+    const wrap = document.getElementById("searchWrap");
+    const input = document.getElementById("searchInput");
+    const isOpening = !wrap.classList.contains("open");
+    wrap.classList.toggle("open");
+    if (isOpening) {
+      input.focus();
+    } else {
+      input.value = "";
+      searchQuery = "";
+      renderProducts();
+    }
+  }
+
+  /* ============================================
+     NEWSLETTER
+     ============================================ */
+  function handleNewsletterSubmit(event) {
+    event.preventDefault();
+    const input = document.getElementById("newsletterEmail");
+    const feedback = document.getElementById("newsletterFeedback");
+    if (!input.checkValidity()) {
+      feedback.textContent = "Confira o e-mail digitado.";
+      return;
+    }
+    feedback.textContent = "Você está na lista. XOXO.";
+    input.value = "";
   }
 
   /* ============================================
@@ -288,16 +434,26 @@
   /* ============================================
      DRAWER OPEN / CLOSE
      ============================================ */
+  function anyPanelOpen() {
+    return (
+      document.getElementById("cartDrawer").classList.contains("open") ||
+      document.getElementById("checkoutModal").classList.contains("open") ||
+      document.getElementById("quickviewModal").classList.contains("open")
+    );
+  }
+
+  function syncOverlay() {
+    document.getElementById("overlay").classList.toggle("show", anyPanelOpen());
+  }
+
   function openDrawer() {
     document.getElementById("cartDrawer").classList.add("open");
-    document.getElementById("overlay").classList.add("show");
+    syncOverlay();
   }
 
   function closeDrawer() {
     document.getElementById("cartDrawer").classList.remove("open");
-    if (!document.getElementById("checkoutModal").classList.contains("open")) {
-      document.getElementById("overlay").classList.remove("show");
-    }
+    syncOverlay();
   }
 
   /* ============================================
@@ -309,13 +465,13 @@
     goToStep(1, true);
     renderCheckoutSummary();
     document.getElementById("checkoutModal").classList.add("open");
-    document.getElementById("overlay").classList.add("show");
+    syncOverlay();
     document.getElementById("cartDrawer").classList.remove("open");
   }
 
   function closeCheckout() {
     document.getElementById("checkoutModal").classList.remove("open");
-    document.getElementById("overlay").classList.remove("show");
+    syncOverlay();
   }
 
   function goToStep(step, skipAnimation) {
@@ -539,6 +695,44 @@
     document.getElementById("continueShopping").addEventListener("click", resetCheckoutAndCart);
     document.getElementById("applyPromoBtn").addEventListener("click", applyPromo);
 
+    document.getElementById("menuToggle").addEventListener("click", toggleMobileMenu);
+    document.querySelectorAll("#mobileNav a:not(.disabled)").forEach((a) =>
+      a.addEventListener("click", closeMobileMenu)
+    );
+
+    document.getElementById("searchToggle").addEventListener("click", toggleSearch);
+    document.getElementById("searchInput").addEventListener("input", (e) => {
+      searchQuery = e.target.value;
+      renderProducts();
+    });
+    document.getElementById("searchInput").addEventListener("keydown", (e) => {
+      if (e.key === "Escape") toggleSearch();
+    });
+
+    document.getElementById("sortSelect").addEventListener("change", (e) => {
+      sortOrder = e.target.value;
+      renderProducts();
+    });
+
+    document.querySelectorAll(".editorial-link").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        activeCategory = btn.dataset.category;
+        renderCategories();
+        renderProducts();
+        document.getElementById("vitrine").scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
+
+    document.getElementById("newsletterForm").addEventListener("submit", handleNewsletterSubmit);
+
+    document.getElementById("closeQuickview").addEventListener("click", closeQuickView);
+    document.getElementById("qvInc").addEventListener("click", () => changeQuickViewQty(1));
+    document.getElementById("qvDec").addEventListener("click", () => changeQuickViewQty(-1));
+    document.getElementById("qvAddToCart").addEventListener("click", addQuickViewToCart);
+    document.getElementById("qvWishBtn").addEventListener("click", () => {
+      if (quickViewProductId) toggleWishlist(quickViewProductId, document.getElementById("qvWishBtn"));
+    });
+
     document.getElementById("promoInput").addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
         e.preventDefault();
@@ -549,6 +743,7 @@
     document.getElementById("overlay").addEventListener("click", () => {
       closeDrawer();
       closeCheckout();
+      closeQuickView();
     });
 
     document.getElementById("shippingForm").addEventListener("submit", (e) => {
@@ -578,6 +773,8 @@
       if (e.key === "Escape") {
         closeDrawer();
         closeCheckout();
+        closeQuickView();
+        closeMobileMenu();
       }
     });
   }
