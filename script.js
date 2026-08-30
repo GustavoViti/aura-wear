@@ -29,15 +29,23 @@
   /* ============================================
      TICKER
      ============================================ */
+  let dynamicTickerItems = [];
+
   function renderTicker() {
     const track = document.getElementById("tickerTrack");
-    const items = [...TICKER_ITEMS, ...TICKER_ITEMS];
+    const combined = [...dynamicTickerItems, ...TICKER_ITEMS];
+    const items = [...combined, ...combined];
     track.innerHTML = items
       .map(
         (text) =>
           `<span class="ticker-item">${text}</span><span class="ticker-divider">✦</span>`
       )
       .join("");
+  }
+
+  function pushTickerFlash(text) {
+    dynamicTickerItems = [text, ...dynamicTickerItems].slice(0, 3);
+    renderTicker();
   }
 
   /* ============================================
@@ -341,6 +349,83 @@
     }
     feedback.textContent = "Você está na lista. XOXO.";
     input.value = "";
+  }
+
+  /* ============================================
+     GOSSIP ALERT (prova social ao vivo)
+     ============================================ */
+  function initGossipAlerts() {
+    const el = document.getElementById("gossipAlert");
+    if (!el) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const templates = [
+      (n) => `👀 Alguém acabou de favoritar "${n}".`,
+      (n) => `Spotted: "${n}" foi parar na sacola de alguém em Manhattan.`,
+      (n) => `A redação confirma: "${n}" está esgotando rápido.`,
+      (n) => `Fonte anônima jura que já viu três pessoas de "${n}" esta semana.`,
+    ];
+
+    let hideTimer = null;
+    function showRandomAlert() {
+      if (!Array.isArray(PRODUCTS) || PRODUCTS.length === 0) return;
+      if (document.hidden) return;
+      const product = PRODUCTS[Math.floor(Math.random() * PRODUCTS.length)];
+      const template = templates[Math.floor(Math.random() * templates.length)];
+      el.textContent = template(product.name);
+      el.classList.add("show");
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(() => el.classList.remove("show"), 5000);
+    }
+
+    setTimeout(showRandomAlert, 7000);
+    setInterval(showRandomAlert, 17000);
+  }
+
+  /* ============================================
+     HERO SCRAMBLE TEXT
+     ============================================ */
+  function scrambleText(el, finalText, duration) {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const len = finalText.length;
+    const totalFrames = Math.round(duration / 30);
+    let frame = 0;
+
+    function tick() {
+      const revealCount = Math.floor((frame / totalFrames) * len);
+      let output = "";
+      for (let i = 0; i < len; i++) {
+        if (finalText[i] === " " || finalText[i] === ",") {
+          output += finalText[i];
+        } else if (i < revealCount) {
+          output += finalText[i];
+        } else {
+          output += chars[Math.floor(Math.random() * chars.length)];
+        }
+      }
+      el.textContent = output;
+      frame++;
+      if (frame <= totalFrames) {
+        requestAnimationFrame(tick);
+      } else {
+        el.textContent = finalText;
+      }
+    }
+    tick();
+  }
+
+  function initHeroScramble() {
+    const lines = document.querySelectorAll(".scramble-line");
+    if (lines.length === 0) return;
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      lines.forEach((el) => (el.textContent = el.dataset.final));
+      return;
+    }
+
+    lines.forEach((el, i) => {
+      setTimeout(() => scrambleText(el, el.dataset.final, 650), 350 + i * 300);
+    });
   }
 
   /* ============================================
@@ -686,6 +771,7 @@
 
       const orderNum = "AW-" + Math.floor(1000 + Math.random() * 9000);
       document.getElementById("orderNumber").textContent = "#" + orderNum;
+      pushTickerFlash(`Confirmado: pedido #${orderNum} acabou de sair da redação. XOXO.`);
       renderConfirmItems(lastConfirmedItems);
       spawnConfetti();
 
@@ -809,6 +895,8 @@
     renderEditorial();
     renderCartDrawer();
     initCardPreview();
+    initHeroScramble();
+    initGossipAlerts();
     bindEvents();
   });
 })();

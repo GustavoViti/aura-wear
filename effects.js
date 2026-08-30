@@ -95,7 +95,48 @@
     });
   }
 
+  /* ============================================
+     TAB ATTENTION — "volta aqui" quando o usuário sai da aba
+     ============================================ */
+  function initTabAttention() {
+    if (typeof document.title === "undefined") return;
+    const originalTitle = document.title;
+    const messages = ["Volta aqui... 👀", "Sentimos sua falta. XOXO", "A vitrine ainda te espera."];
+    let idx = 0;
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        document.title = messages[idx % messages.length];
+        idx++;
+      } else {
+        document.title = originalTitle;
+      }
+    });
+  }
+
+  /* ============================================
+     MAGNETIC BUTTONS
+     ============================================ */
+  function initMagneticButtons() {
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    document.querySelectorAll(".btn-gold, .btn-outline").forEach((btn) => {
+      btn.addEventListener("mousemove", (e) => {
+        const rect = btn.getBoundingClientRect();
+        const x = e.clientX - rect.left - rect.width / 2;
+        const y = e.clientY - rect.top - rect.height / 2;
+        btn.style.transform = `translate(${x * 0.2}px, ${y * 0.3}px)`;
+      });
+      btn.addEventListener("mouseleave", () => {
+        btn.style.transform = "";
+      });
+    });
+  }
+
   initPreloader();
   initScrollProgress();
   initCustomCursor();
+  initTabAttention();
+  initMagneticButtons();
 })();

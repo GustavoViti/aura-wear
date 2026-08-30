@@ -1713,3 +1713,82 @@ body.has-custom-cursor .cursor-ring { opacity: 1; }
   line-height: 1.5;
   margin: -8px 0 0;
 }
+
+/* ============================================
+   CUSTOM SCROLLBAR
+   ============================================ */
+html {
+  scrollbar-color: var(--gold) var(--cream);
+  scrollbar-width: thin;
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--cream); }
+::-webkit-scrollbar-thumb {
+  background: var(--gold);
+  border: 2px solid var(--cream);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--wine); }
+
+/* ============================================
+   GOSSIP ALERT (prova social ao vivo)
+   ============================================ */
+.gossip-alert {
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+  max-width: 280px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--gold);
+  padding: 0.85em 1.1em;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--ink);
+  box-shadow: 0 14px 30px -18px rgba(27, 23, 18, 0.4);
+  z-index: 80;
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+  transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1), transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.gossip-alert.show { opacity: 1; transform: translateY(0); }
+
+@media (max-width: 480px) {
+  .gossip-alert { left: 12px; right: 12px; max-width: none; bottom: 12px; }
+}
+
+/* ============================================
+   PRODUCT SHINE SWEEP (hover)
+   ============================================ */
+.product-swatch::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, 0.3) 50%, transparent 60%);
+  transform: translateX(-130%);
+  transition: transform 0.75s ease;
+  pointer-events: none;
+}
+
+.product-card:hover .product-swatch::after { transform: translateX(130%); }
+
+/* ============================================
+   MAGNETIC BUTTONS
+   ============================================ */
+.btn-gold, .btn-outline {
+  transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease-out;
+}
+
+/* ============================================
+   HERO SCRAMBLE TEXT
+   ============================================ */
+.scramble-line { display: inline-block; }
+
+@media (prefers-reduced-motion: reduce) {
+  .gossip-alert { transition: none; }
+}
