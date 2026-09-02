@@ -51,15 +51,25 @@
   /* ============================================
      CATEGORIES
      ============================================ */
+  const CATEGORY_ICONS = {
+    todos: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><path d="M12 3l2.4 5.8L21 9.6l-4.7 4.1L17.6 21 12 17.6 6.4 21l1.3-7.3L3 9.6l6.6-.8L12 3z"/></svg>`,
+    "saias-calcas": `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6l1 4H8l1-4z"/><path d="M8 7h8l3 13H5L8 7z"/><path d="M12 7v13" stroke-dasharray="1 3"/></svg>`,
+    sapatos: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17.5c0-2.1 1.2-3.2 3.3-4.1l4.7-2c1-.4 1.5-1 2-1.9l1-1.8c1.5 1 2 2.5 2 4.1v1.8c2.3 0 5 1 5 3v1.9H3v-1z"/><path d="M3 17.5h17"/></svg>`,
+    "vestidos-blusas": `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3L7 6l2 2-3 12h12L15 8l2-2-2-3"/><path d="M9 3c1 1 5 1 6 0"/></svg>`,
+    "Blazers-casacos": `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4L6 6l-2 4 2 1v10h12V11l2-1-2-4-3-2"/><path d="M9 4l3 4 3-4"/><path d="M12 8v13"/></svg>`,
+    Acessorios: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4c0 6.5 3.6 11 8 11s8-4.5 8-11"/><circle cx="12" cy="16.5" r="2.3"/></svg>`,
+    Bolsas: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 9V7a4.5 4.5 0 0 1 9 0v2"/><rect x="4" y="9" width="16" height="12" rx="1.5"/></svg>`,
+  };
+
   function renderCategories() {
     const strip = document.getElementById("categoryStrip");
-    const all = [{ id: "todos", label: "Todas", glyph: "★" }, ...CATEGORIES];
+    const all = [{ id: "todos", label: "Todas" }, ...CATEGORIES];
 
     strip.innerHTML = all
       .map(
         (cat, i) => `
         <button class="category-card${cat.id === activeCategory ? " active" : ""}" data-category="${cat.id}" style="--i:${i}">
-          <div class="category-glyph">${cat.glyph}</div>
+          <div class="category-glyph">${CATEGORY_ICONS[cat.id] || CATEGORY_ICONS.todos}</div>
           <div class="category-label">${cat.label}</div>
         </button>`
       )

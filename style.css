@@ -298,12 +298,14 @@ img, svg { display: block; max-width: 100%; }
 }
 
 .category-glyph {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 1.9rem;
   color: var(--wine);
   margin-bottom: var(--space-1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+
+.category-glyph svg { width: 30px; height: 30px; }
 
 .category-label {
   font-size: 0.78rem;

@@ -8,12 +8,12 @@
 */
 
 const CATEGORIES = [
-  { id: "saias-calcas", label: "Saias & Calças", glyph: "S" },
-  { id: "sapatos", label: "Sapatos", glyph: "Z" },
-  { id: "vestidos-blusas", label: "Vestidos & Blusas", glyph: "V" },
-  { id: "Blazers-casacos", label: "Blazers & Casacos", glyph: "B" },
-  { id: "Acessorios", label: "Acessórios", glyph: "A" },
-  { id: "Bolsas", label: "Bolsas", glyph: "L" },
+  { id: "saias-calcas", label: "Saias & Calças" },
+  { id: "sapatos", label: "Sapatos" },
+  { id: "vestidos-blusas", label: "Vestidos & Blusas" },
+  { id: "Blazers-casacos", label: "Blazers & Casacos" },
+  { id: "Acessorios", label: "Acessórios" },
+  { id: "Bolsas", label: "Bolsas" },
 ];
 
 let PRODUCTS = [
