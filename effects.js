@@ -10,13 +10,39 @@
 
     const hide = () => preloader.classList.add("hide");
 
-    if (document.readyState === "complete") {
-      setTimeout(hide, 500);
-    } else {
-      window.addEventListener("load", () => setTimeout(hide, 500));
+    const marks = preloader.querySelectorAll(".preloader-mark span");
+    const lastMark = marks[marks.length - 1];
+
+    let animationDone = !lastMark;
+    let pageLoaded = document.readyState === "complete";
+
+    function maybeHide() {
+      if (animationDone && pageLoaded) hide();
     }
-    // rede lenta não deve travar a experiência
-    setTimeout(hide, 2500);
+
+    // só some depois que a última letra terminar de "subir"
+    if (lastMark) {
+      lastMark.addEventListener(
+        "animationend",
+        () => {
+          animationDone = true;
+          maybeHide();
+        },
+        { once: true }
+      );
+    }
+
+    if (pageLoaded) {
+      maybeHide();
+    } else {
+      window.addEventListener("load", () => {
+        pageLoaded = true;
+        maybeHide();
+      });
+    }
+
+    // rede lenta (ou animação desativada) não deve travar a experiência
+    setTimeout(hide, 8000);
   }
 
   /* ============================================
