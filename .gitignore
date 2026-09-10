@@ -1,0 +1,14 @@
+# variáveis de ambiente
+.env
+.env.local
+
+# config com as chaves reais (Supabase + Gemini). O template
+# config.example.js fica versionado.
+config.js
+
+# sistema
+.DS_Store
+Thumbs.db
+
+# dependências (caso o projeto ganhe tooling no futuro)
+node_modules/

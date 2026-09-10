@@ -457,6 +457,9 @@
     const product = PRODUCTS.find((p) => p.id === productId);
     if (!product) return;
 
+    // gancho para efeitos (motion.js): "voar pra sacola"
+    document.dispatchEvent(new CustomEvent("aura:add-to-cart", { detail: { id: productId } }));
+
     const existing = cart.find((item) => item.id === productId);
     if (existing) {
       existing.qty += 1;
@@ -810,6 +813,83 @@
     document.getElementById("cardPreviewExpiry").textContent = "MM/AA";
     document.getElementById("cardPreviewCvv").textContent = "•••";
   }
+
+  /* ============================================
+     API PÚBLICA — consumida pelo chat de IA (chat.js)
+     Mantém o carrinho e o catálogo encapsulados; o chat só
+     enxerga o que for exposto aqui.
+     ============================================ */
+  function publicProductShape(p) {
+    const cat = CATEGORIES.find((c) => c.id === p.category);
+    return {
+      id: p.id,
+      name: p.name,
+      category: p.category,
+      categoryLabel: cat ? cat.label : p.category,
+      priceCents: p.priceCents,
+      price: formatPrice(p.priceCents),
+      description: p.description || "",
+      featured: !!p.featured,
+      inEdit: !!p.inEdit,
+      swatch: p.swatch,
+      imageUrl: p.imageUrl || "",
+    };
+  }
+
+  window.AuraStore = {
+    getProducts() {
+      return PRODUCTS.map(publicProductShape);
+    },
+    getCategories() {
+      return CATEGORIES.map((c) => ({ ...c }));
+    },
+    findProduct(id) {
+      const p = PRODUCTS.find((x) => x.id === id);
+      return p ? publicProductShape(p) : null;
+    },
+    addToCart(id, qty) {
+      const product = PRODUCTS.find((p) => p.id === id);
+      if (!product) return { ok: false, error: "produto não encontrado" };
+      const n = Math.max(1, Math.min(20, Math.round(Number(qty) || 1)));
+      for (let i = 0; i < n; i++) addToCart(id);
+      return { ok: true, product: publicProductShape(product), quantity: n, cart: this.getCart() };
+    },
+    getCart() {
+      return {
+        items: cart.map((i) => ({
+          id: i.id,
+          name: i.name,
+          qty: i.qty,
+          priceCents: i.priceCents,
+          price: formatPrice(i.priceCents),
+          lineTotal: formatPrice(i.priceCents * i.qty),
+        })),
+        count: cart.reduce((s, i) => s + i.qty, 0),
+        subtotalCents: cartSubtotalCents(),
+        subtotal: formatPrice(cartSubtotalCents()),
+      };
+    },
+    openCart() {
+      openDrawer();
+      return { ok: true };
+    },
+    showProduct(id) {
+      const p = PRODUCTS.find((x) => x.id === id);
+      if (!p) return { ok: false, error: "produto não encontrado" };
+      openQuickView(id);
+      return { ok: true };
+    },
+    setCategory(id) {
+      const valid = id === "todos" || CATEGORIES.some((c) => c.id === id);
+      if (!valid) return { ok: false, error: "categoria inválida" };
+      activeCategory = id;
+      renderCategories();
+      renderProducts();
+      document.getElementById("vitrine").scrollIntoView({ behavior: "smooth", block: "start" });
+      return { ok: true };
+    },
+    formatPrice,
+  };
 
   /* ============================================
      EVENTS

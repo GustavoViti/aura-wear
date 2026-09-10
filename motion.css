@@ -1,0 +1,281 @@
+/* ============================================
+   MOTION — camada extra de animação / imersão
+   Carregada depois de style.css. Tudo aqui é
+   progressive enhancement e cai fora em
+   prefers-reduced-motion (bloco no fim).
+   ============================================ */
+
+/* --------------------------------------------
+   1. HERO
+   -------------------------------------------- */
+/* "respiração" contínua da foto do hero (sobrescreve a regra de style.css) */
+.hero-photo {
+  animation: heroPhotoIn 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.4s forwards,
+             auraHeroDrift 20s ease-in-out 2.2s infinite;
+}
+
+@keyframes auraHeroDrift {
+  0%, 100% { transform: scale(1.02) translate(0, 0); }
+  50% { transform: scale(1.05) translate(-1.4%, 1%); }
+}
+
+/* camadas do parallax (mouse + scroll) — transform vem inline via motion.js */
+.hero-frame,
+.hero-caption { will-change: transform; }
+
+/* --------------------------------------------
+   2. REVELAÇÃO EDITORIAL (texto + imagem)
+   -------------------------------------------- */
+.aura-line {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+}
+
+.aura-line-i {
+  display: block;
+  transform: translateY(115%);
+  transition: transform 0.72s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.is-revealed .aura-line-i { transform: translateY(0); }
+
+/* revelação da imagem dos cards, aproveitando o .in-view que script.js já aplica.
+   Fica atrás de html.js-motion: se o motion.js não rodar, as imagens aparecem
+   normalmente (sem clip). */
+html.js-motion .product-card .product-swatch {
+  clip-path: inset(0 0 100% 0);
+  transition: clip-path 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: calc(min(var(--i, 0), 6) * 0.05s + 0.1s);
+}
+
+html.js-motion .product-card.in-view .product-swatch {
+  clip-path: inset(0 0 0 0);
+}
+
+/* --------------------------------------------
+   3. VITRINE — tilt + skeleton
+   -------------------------------------------- */
+.product-card.is-tilting {
+  transition: transform 0.12s ease-out, box-shadow 0.3s ease;
+  will-change: transform;
+}
+
+/* skeleton de carregamento do catálogo */
+.aura-skel {
+  aspect-ratio: 4 / 5;
+  border: 1px solid var(--line);
+  background: linear-gradient(
+    100deg,
+    rgba(27, 23, 18, 0.04) 30%,
+    rgba(27, 23, 18, 0.09) 50%,
+    rgba(27, 23, 18, 0.04) 70%
+  );
+  background-size: 200% 100%;
+  animation: auraShimmer 1.4s ease-in-out infinite;
+}
+
+.aura-skel + .aura-skel { margin-top: 0; }
+
+@keyframes auraShimmer {
+  0% { background-position: 150% 0; }
+  100% { background-position: -50% 0; }
+}
+
+.aura-skel-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+}
+
+@media (max-width: 860px) {
+  .aura-skel-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* --------------------------------------------
+   4. "VOAR PRA SACOLA"
+   -------------------------------------------- */
+.aura-fly-clone {
+  position: fixed;
+  z-index: 120;
+  pointer-events: none;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  box-shadow: 0 20px 40px -16px rgba(27, 23, 18, 0.4);
+}
+
+.aura-fly-clone .wish-btn,
+.aura-fly-clone .quick-view-btn,
+.aura-fly-clone .featured-badge,
+.aura-fly-clone::after { display: none !important; }
+
+.aura-fly-clone img { width: 100%; height: 100%; object-fit: cover; }
+
+/* --------------------------------------------
+   5. ÍNDICE DE CAPÍTULOS
+   -------------------------------------------- */
+.aura-chapters {
+  position: fixed;
+  right: 22px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  align-items: flex-end;
+}
+
+.aura-chapter {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 0;
+  color: var(--ink);
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+}
+
+.aura-chapter:hover { opacity: 0.85; }
+
+.aura-chapter.is-active { opacity: 1; }
+
+.aura-chapter-num {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  letter-spacing: 0.1em;
+  width: 1.8em;
+  text-align: right;
+}
+
+.aura-chapter-label {
+  font-family: var(--font-body);
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  opacity: 0;
+  transition: max-width 0.4s ease, opacity 0.3s ease;
+}
+
+.aura-chapter:hover .aura-chapter-label,
+.aura-chapter.is-active .aura-chapter-label {
+  max-width: 120px;
+  opacity: 1;
+}
+
+.aura-chapter::after {
+  content: "";
+  width: 22px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0.5);
+  transform-origin: right;
+  transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.aura-chapter.is-active::after { transform: scaleX(1); background: var(--gold); }
+
+@media (max-width: 1080px) {
+  .aura-chapters { display: none; }
+}
+
+/* --------------------------------------------
+   6. RÓTULO NO CURSOR
+   -------------------------------------------- */
+.aura-cursor-label {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9998;
+  pointer-events: none;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 0.78rem;
+  color: var(--cream);
+  background: var(--ink);
+  padding: 0.2em 0.6em;
+  border: 1px solid var(--gold);
+  white-space: nowrap;
+  opacity: 0;
+  transform-origin: left top;
+  transition: opacity 0.2s ease, scale 0.2s ease;
+  scale: 0.7;
+  margin: 14px 0 0 14px;
+}
+
+.aura-cursor-label.show { opacity: 1; scale: 1; }
+
+/* --------------------------------------------
+   7. CORTINA DE TRANSIÇÃO DE PÁGINA
+   -------------------------------------------- */
+.aura-curtain {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: var(--ink);
+  transform: translateY(-100%);
+  pointer-events: none;
+}
+
+.aura-curtain::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 2px;
+  background: var(--gold);
+}
+
+/* --------------------------------------------
+   8. MICROINTERAÇÕES
+   -------------------------------------------- */
+/* grão vivo */
+.noise-overlay { animation: auraGrain 4s steps(5) infinite; }
+
+@keyframes auraGrain {
+  0% { background-position: 0 0; }
+  100% { background-position: 160px 110px; }
+}
+
+/* cascata dos itens da sacola ao abrir a gaveta */
+.cart-drawer.just-opened .cart-item {
+  animation: auraCartItemIn 0.42s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+.cart-drawer.just-opened .cart-item:nth-child(1) { animation-delay: 0.04s; }
+.cart-drawer.just-opened .cart-item:nth-child(2) { animation-delay: 0.10s; }
+.cart-drawer.just-opened .cart-item:nth-child(3) { animation-delay: 0.16s; }
+.cart-drawer.just-opened .cart-item:nth-child(4) { animation-delay: 0.22s; }
+.cart-drawer.just-opened .cart-item:nth-child(5) { animation-delay: 0.28s; }
+.cart-drawer.just-opened .cart-item:nth-child(n+6) { animation-delay: 0.34s; }
+
+@keyframes auraCartItemIn {
+  from { opacity: 0; transform: translateX(18px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* --------------------------------------------
+   REDUCED MOTION — neutraliza tudo que é CSS-only
+   -------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .hero-photo { animation: heroPhotoIn 1.1s ease 0.4s forwards; }
+  .hero-frame, .hero-caption { will-change: auto; }
+
+  .aura-line { overflow: visible; padding-bottom: 0; margin-bottom: 0; }
+  .aura-line-i { transform: none; transition: none; }
+
+  html.js-motion .product-card .product-swatch { clip-path: none; transition: none; }
+
+  .aura-skel { animation: none; }
+  .noise-overlay { animation: none; }
+  .cart-drawer.just-opened .cart-item { animation: none; }
+  .aura-cursor-label { display: none; }
+  .aura-curtain { display: none; }
+}
