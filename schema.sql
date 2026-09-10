@@ -93,3 +93,39 @@ drop policy if exists "Exclusão liberada — sem auth (projeto de apresentaçã
 create policy "Exclusão liberada — sem auth (projeto de apresentação)"
   on storage.objects for delete
   using (bucket_id = 'product-images');
+
+-- ============================================
+-- APP_SETTINGS — configurações lidas em runtime pelo front
+-- ============================================
+-- Guarda a chave da API do Gemini (e o modelo) para o chat funcionar em
+-- produção sem um config.js publicado. ATENÇÃO: a policy de leitura abaixo é
+-- pública, então a chave fica acessível a quem tiver a anon key (que está no
+-- navegador). Ou seja: NÃO esconde a chave — só resolve o deploy. Restrinja a
+-- chave no Google AI Studio. Para realmente escondê-la, use uma Edge Function
+-- como proxy em vez desta tabela.
+
+create table if not exists app_settings (
+  key text primary key,
+  value text,
+  updated_at timestamptz not null default now()
+);
+
+alter table app_settings enable row level security;
+
+drop policy if exists "Leitura pública de settings" on app_settings;
+create policy "Leitura pública de settings"
+  on app_settings for select
+  using (true);
+
+-- Escrita liberada sem auth, pelo mesmo motivo do resto do schema (admin sem
+-- login). Em produção real, troque por auth.uid() is not null.
+drop policy if exists "Escrita liberada de settings — sem auth (projeto de apresentação)" on app_settings;
+create policy "Escrita liberada de settings — sem auth (projeto de apresentação)"
+  on app_settings for all
+  using (true)
+  with check (true);
+
+insert into app_settings (key, value) values
+  ('gemini_api_key', ''),
+  ('gemini_model', 'gemini-3.6-flash')
+on conflict (key) do nothing;

@@ -146,6 +146,36 @@
     </div>
   </section>
 
+  <section class="admin-form-section" id="settingsSection">
+    <div class="section-head">
+      <p class="eyebrow">Integrações</p>
+      <h2>Chat de IA</h2>
+    </div>
+
+    <form id="settingsForm" class="admin-form" novalidate>
+      <div class="field-row">
+        <label>Chave da API do Google Gemini
+          <input type="text" name="geminiKey" placeholder="AIza… ou AQ…" autocomplete="off" spellcheck="false">
+        </label>
+      </div>
+      <div class="field-row">
+        <label>Modelo
+          <input type="text" name="geminiModel" placeholder="gemini-3.6-flash" spellcheck="false">
+        </label>
+      </div>
+      <p class="image-hint">
+        Salvo na tabela <code>app_settings</code> do Supabase e lido pelo chat da home —
+        é o que faz o chat funcionar em produção. Gere a chave em
+        aistudio.google.com/apikey e restrinja-a (referrers + só a Generative Language API).
+        Campo em branco desliga o chat. Atenção: a chave fica acessível a quem abrir o
+        DevTools do site.
+      </p>
+      <div class="admin-form-actions">
+        <button type="submit" class="btn-gold" id="saveSettingsBtn">Salvar</button>
+      </div>
+    </form>
+  </section>
+
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

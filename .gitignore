@@ -2,9 +2,8 @@
 .env
 .env.local
 
-# config com as chaves reais (Supabase + Gemini). O template
-# config.example.js fica versionado.
-config.js
+# obs: config.js É versionado (só tem config pública do Supabase).
+# A chave do Gemini fica na tabela app_settings do Supabase, nunca no repo.
 
 # sistema
 .DS_Store

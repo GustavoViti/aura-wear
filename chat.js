@@ -3,9 +3,13 @@
   Front-end puro falando direto com a API do Google Gemini
   (window.GEMINI_CONFIG, definido em config.js).
 
-  A chave fica exposta no navegador — restrinja-a no Google AI Studio.
-  Sem chave válida, o botão aparece desabilitado e o resto do site
-  continua funcionando.
+  A chave do Gemini é resolvida em runtime, nesta ordem:
+    1. window.GEMINI_CONFIG.apiKey  (override local, ex.: config.js em dev)
+    2. tabela app_settings do Supabase (linha gemini_api_key) — é assim que
+       funciona em produção, já que config.js não é publicado.
+  A chave acaba visível no navegador de qualquer forma — restrinja-a no
+  Google AI Studio. Sem chave válida, o botão aparece desabilitado e o
+  resto do site continua funcionando.
 
   O chat mexe na loja só pela API pública window.AuraStore (script.js):
   busca produtos, adiciona à sacola, abre o carrinho e o quick view.
@@ -13,30 +17,60 @@
 (function () {
   "use strict";
 
-  const cfg = window.GEMINI_CONFIG || {};
-  const API_KEY = cfg.apiKey || "";
-  const MODEL = cfg.model || "gemini-3.6-flash";
+  const PLACEHOLDER_RE = /COLE_SUA_CHAVE|SUA_CHAVE|YOUR_API_KEY|xxx/i;
 
-  const isConfigured =
-    !!API_KEY && !/COLE_SUA_CHAVE|SUA_CHAVE|YOUR_API_KEY|xxx/i.test(API_KEY);
+  let apiKey = "";
+  let model = "gemini-3.6-flash";
+  let configured = false;
 
-  const BASE_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
+  function isValidKey(k) {
+    return !!k && !PLACEHOLDER_RE.test(k);
+  }
+
+  // Resolve a chave: primeiro o override local, depois o Supabase.
+  async function resolveGeminiConfig() {
+    const local = window.GEMINI_CONFIG || {};
+    if (local.model) model = local.model;
+    if (isValidKey(local.apiKey)) {
+      apiKey = String(local.apiKey).trim();
+      configured = true;
+      return;
+    }
+
+    if (!window.supabaseClient) return;
+    try {
+      const { data, error } = await window.supabaseClient
+        .from("app_settings")
+        .select("key, value")
+        .in("key", ["gemini_api_key", "gemini_model"]);
+      if (error) {
+        console.warn("[chat] não foi possível ler app_settings:", error.message);
+        return;
+      }
+      (data || []).forEach((row) => {
+        if (row.key === "gemini_api_key" && isValidKey(row.value)) apiKey = String(row.value).trim();
+        if (row.key === "gemini_model" && row.value) model = String(row.value).trim();
+      });
+      configured = isValidKey(apiKey);
+    } catch (e) {
+      console.warn("[chat] erro ao buscar config do Gemini:", e);
+    }
+  }
 
   // A credencial pode ser uma API key clássica ("AIza...") ou um token de
   // acesso ("AQ..."). A key vai na query; o token vai como Bearer. Tentamos
   // um jeito e, se a auth falhar, caímos no outro automaticamente.
-  const looksLikeToken = /^AQ|^ya29\./.test(API_KEY);
-
   function requestVariants() {
+    const base = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
     const asKey = {
-      url: `${BASE_URL}?key=${encodeURIComponent(API_KEY)}`,
+      url: `${base}?key=${encodeURIComponent(apiKey)}`,
       headers: { "Content-Type": "application/json" },
     };
     const asBearer = {
-      url: BASE_URL,
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${API_KEY}` },
+      url: base,
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
     };
-    return looksLikeToken ? [asBearer, asKey] : [asKey, asBearer];
+    return /^AQ|^ya29\./.test(apiKey) ? [asBearer, asKey] : [asKey, asBearer];
   }
 
   /* ============================================
@@ -405,7 +439,7 @@
   }
 
   function openPanel() {
-    if (!isConfigured) return;
+    if (!configured) return;
     opened = true;
     els.panel.classList.add("open");
     els.launcher.classList.add("hidden");
@@ -470,37 +504,41 @@
       typing: null,
     };
 
-    if (!isConfigured) {
-      launcher.classList.add("aura-chat-launcher--off");
-      launcher.setAttribute("aria-label", "Chat indisponível — falta a chave do Gemini");
-      launcher.addEventListener("click", () => {
-        console.warn("[chat] defina window.GEMINI_CONFIG.apiKey em config.js para ativar o chat.");
-      });
-      return;
-    }
-
-    launcher.addEventListener("click", openPanel);
+    // handlers que valem sempre
     panel.querySelector(".aura-chat-close").addEventListener("click", closePanel);
-
     els.form.addEventListener("submit", (e) => {
       e.preventDefault();
       handleSend();
     });
-
     els.input.addEventListener("keydown", (e) => {
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
         handleSend();
       }
     });
-
     els.input.addEventListener("input", () => {
       els.input.style.height = "auto";
       els.input.style.height = Math.min(els.input.scrollHeight, 120) + "px";
     });
-
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && opened) closePanel();
+    });
+
+    // começa "carregando"; a chave é resolvida de forma assíncrona
+    launcher.classList.add("aura-chat-launcher--off");
+    launcher.setAttribute("aria-label", "Carregando o chat...");
+    launcher.addEventListener("click", () => {
+      if (configured) openPanel();
+      else console.warn("[chat] sem chave do Gemini — defina em config.js ou na tabela app_settings (aba Admin).");
+    });
+
+    resolveGeminiConfig().then(() => {
+      if (configured) {
+        launcher.classList.remove("aura-chat-launcher--off");
+        launcher.setAttribute("aria-label", "Falar com a colunista");
+      } else {
+        launcher.setAttribute("aria-label", "Chat indisponível — falta a chave do Gemini");
+      }
     });
   }
 

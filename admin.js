@@ -182,6 +182,71 @@
     renderTable(products);
   }
 
+  /* ============================================
+     CONFIGURAÇÕES (app_settings) — chave do Gemini
+     ============================================ */
+  async function loadSettings() {
+    if (!window.supabaseClient) return;
+    const { data, error } = await window.supabaseClient
+      .from("app_settings")
+      .select("key, value")
+      .in("key", ["gemini_api_key", "gemini_model"]);
+
+    if (error) {
+      console.warn("Não foi possível carregar app_settings.", error.message);
+      return;
+    }
+
+    const form = document.getElementById("settingsForm");
+    (data || []).forEach((row) => {
+      if (row.key === "gemini_api_key") form.elements.geminiKey.value = row.value || "";
+      if (row.key === "gemini_model") form.elements.geminiModel.value = row.value || "";
+    });
+  }
+
+  async function handleSettingsSubmit(event) {
+    event.preventDefault();
+    if (!window.supabaseClient) {
+      showToast("Configure o Supabase antes de salvar.");
+      return;
+    }
+
+    const form = event.target;
+    const key = form.elements.geminiKey.value.trim();
+    const model = form.elements.geminiModel.value.trim() || "gemini-3.6-flash";
+    const now = new Date().toISOString();
+
+    const btn = document.getElementById("saveSettingsBtn");
+    btn.disabled = true;
+    btn.textContent = "Salvando...";
+
+    const { error } = await window.supabaseClient
+      .from("app_settings")
+      .upsert(
+        [
+          { key: "gemini_api_key", value: key, updated_at: now },
+          { key: "gemini_model", value: model, updated_at: now },
+        ],
+        { onConflict: "key" }
+      );
+
+    btn.disabled = false;
+    btn.textContent = "Salvar";
+
+    if (error) {
+      console.error(error);
+      if (error.code === "42P01") {
+        showToast("Tabela app_settings não existe — rode o schema.sql atualizado no Supabase.");
+      } else {
+        showToast("Não foi possível salvar. Confira o console.");
+      }
+      return;
+    }
+
+    form.elements.geminiModel.value = model;
+    showToast(key ? "Chat de IA configurado." : "Chave removida — chat desligado.");
+  }
+
   function startEdit(product) {
     if (!product) return;
     editingId = product.id;
@@ -342,6 +407,13 @@
         label.classList.add("active");
       });
     });
+
+    const settingsForm = document.getElementById("settingsForm");
+    if (settingsForm) {
+      settingsForm.addEventListener("submit", handleSettingsSubmit);
+      document.getElementById("saveSettingsBtn").disabled = !configured;
+      if (configured) loadSettings();
+    }
 
     if (configured) refreshTable();
   });
