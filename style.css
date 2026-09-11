@@ -1029,50 +1029,98 @@ a:focus-visible, button:focus-visible {
 }
 
 /* ============================================
-   PRELOADER
+   PRELOADER — abertura editorial
    ============================================ */
 .preloader {
   position: fixed;
   inset: 0;
   z-index: 999;
-  background: var(--cream);
+  background: transparent;
+  color: var(--cream);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: opacity 3.3s ease, visibility 3.3s ease;
+  overflow: hidden;
 }
 
-.preloader.hide { opacity: 0; visibility: hidden; pointer-events: none; }
+.preloader-inner {
+  position: relative;
+  z-index: 2;
+  width: min(560px, 82vw);
+  text-align: center;
+  transition: opacity 0.4s ease, transform 0.6s cubic-bezier(0.7, 0, 0.3, 1);
+}
+
+.preloader-eyebrow {
+  font-family: var(--font-body);
+  font-size: 0.62rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--gold-light);
+  margin: 0 0 1.4rem;
+  opacity: 0;
+  animation: fadeUp 0.8s ease 0.15s forwards;
+}
 
 .preloader-mark {
   font-family: var(--font-display);
-  font-size: clamp(1.6rem, 6vw, 2.6rem);
-  letter-spacing: 0.14em;
-  display: flex;
-}
-
-.preloader-mark span {
-  display: inline-block;
+  font-weight: 500;
+  font-size: clamp(2rem, 8vw, 3.6rem);
+  letter-spacing: 0.16em;
+  line-height: 1;
   opacity: 0;
-  transform: translateY(14px);
-  animation: fadeUp 2.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: fadeUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards;
 }
 
-.preloader-space { width: 0.4em; }
 .preloader-dot { color: var(--gold); }
 
-.preloader-mark span:nth-child(1) { animation-delay: 0.3s; }
-.preloader-mark span:nth-child(2) { animation-delay: 0.6s; }
-.preloader-mark span:nth-child(3) { animation-delay: 0.9s; }
-.preloader-mark span:nth-child(4) { animation-delay: 1.2s; }
-.preloader-mark span:nth-child(6) { animation-delay: 1.8s; }
-.preloader-mark span:nth-child(7) { animation-delay: 2.1s; }
-.preloader-mark span:nth-child(8) { animation-delay: 2.4s; }
-.preloader-mark span:nth-child(9) { animation-delay: 2.7s; }
-.preloader-mark span:nth-child(10) { animation-delay: 3.3s; }
+.preloader-bar {
+  margin: 1.6rem auto 0.7rem;
+  width: 100%;
+  height: 1px;
+  background: rgba(246, 241, 231, 0.16);
+  overflow: hidden;
+}
+
+.preloader-bar-fill {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: var(--gold);
+  transition: width 0.25s linear;
+}
+
+.preloader-count {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  letter-spacing: 0.14em;
+  color: rgba(246, 241, 231, 0.55);
+}
+
+.preloader-count-pct { margin-left: 0.15em; }
+
+/* cortina dupla (o "fundo" do preloader) que abre na saída */
+.preloader-panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 50.5%;
+  background: var(--ink);
+  z-index: 1;
+  transition: transform 0.7s cubic-bezier(0.7, 0, 0.3, 1);
+}
+.preloader-panel--top { top: 0; }
+.preloader-panel--bottom { bottom: 0; }
+
+.preloader.hide { pointer-events: none; }
+.preloader.hide .preloader-inner { opacity: 0; transform: translateY(-12px); }
+.preloader.hide .preloader-panel--top { transform: translateY(-100%); }
+.preloader.hide .preloader-panel--bottom { transform: translateY(100%); }
+.preloader.gone { display: none; }
 
 @media (prefers-reduced-motion: reduce) {
-  .preloader-mark span { animation: none; opacity: 1; transform: none; }
+  .preloader-eyebrow, .preloader-mark { animation: none; opacity: 1; }
+  .preloader-inner, .preloader-panel { transition: none; }
 }
 
 /* ============================================
@@ -2068,4 +2116,241 @@ html {
   .aura-chat-panel.open { transform: none; }
   .aura-chat-launcher-dot { animation: none; }
   .aura-chat-typing span { animation: none; opacity: 0.7; }
+}
+
+/* ============================================================
+   ============================================================
+   POLISH DE APRESENTAÇÃO — camada de impacto visual
+   (overrides no fim do arquivo: fácil de achar / reverter)
+   ============================================================
+   ============================================================ */
+
+::selection { background: var(--wine); color: var(--cream); }
+::-moz-selection { background: var(--wine); color: var(--cream); }
+
+html { scrollbar-color: var(--gold) var(--cream); }
+
+/* ---- Tipografia com mais presença ------------------------- */
+.eyebrow { font-size: 0.7rem; letter-spacing: 0.26em; }
+
+.section-head h2 {
+  font-size: clamp(2.3rem, 5vw, 3.6rem);
+  letter-spacing: -0.015em;
+  line-height: 1;
+}
+
+.section-sub { font-size: 1rem; max-width: 42ch; }
+
+/* ---- Números editoriais gigantes atrás dos títulos -------- */
+.section-head { position: relative; }
+.section-head[data-num]::before {
+  content: attr(data-num);
+  position: absolute;
+  left: -0.05em;
+  top: -0.62em;
+  font: italic 400 clamp(3.5rem, 10vw, 7.5rem) / 1 var(--font-display);
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(27, 23, 18, 0.16);
+  z-index: 0;
+  pointer-events: none;
+  user-select: none;
+}
+.section-head > * { position: relative; z-index: 1; }
+
+/* ---- Botão dourado com preenchimento em varredura --------- */
+.btn-gold {
+  position: relative;
+  overflow: hidden;
+  z-index: 0;
+  border-color: var(--ink);
+}
+.btn-gold::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--ink);
+  transform: translateX(-101%);
+  transition: transform 0.42s cubic-bezier(0.7, 0, 0.3, 1);
+  z-index: -1;
+}
+.btn-gold:hover { background: transparent; color: var(--cream); }
+.btn-gold:hover::before { transform: translateX(0); }
+
+.btn-gold--lg {
+  padding: 1.15em 2.6em;
+  font-size: 0.82rem;
+  letter-spacing: 0.2em;
+}
+
+/* ---- HERO cinematográfico -------------------------------- */
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding-top: clamp(3rem, 8vw, 6rem);
+  padding-bottom: clamp(3rem, 8vw, 6rem);
+}
+
+.hero-text, .hero-art { position: relative; z-index: 2; }
+
+.hero h1 {
+  font-size: clamp(2.7rem, 5.4vw, 4.3rem);
+  line-height: 1.02;
+  letter-spacing: -0.012em;
+  font-weight: 500;
+}
+
+.hero-sub { max-width: 40ch; font-size: 1.05rem; }
+
+.hero-ghost {
+  position: absolute;
+  left: -0.06em;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(9rem, 26vw, 22rem);
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(27, 23, 18, 0.07);
+  white-space: nowrap;
+  z-index: 0;
+  pointer-events: none;
+  user-select: none;
+}
+
+.hero-issue {
+  position: absolute;
+  top: clamp(1rem, 4vw, 2.4rem);
+  right: var(--space-3);
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.62rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(27, 23, 18, 0.5);
+  z-index: 2;
+}
+.hero-issue span { color: var(--wine); }
+
+.hero-frame {
+  max-width: 380px;
+  position: relative;
+  box-shadow: 0 40px 80px -40px rgba(27, 23, 18, 0.45);
+}
+/* moldura dourada interna sobre a foto */
+.hero-frame::after {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  border: 1px solid rgba(185, 151, 91, 0.55);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.hero-caption { font-size: 0.9rem; letter-spacing: 0.02em; }
+
+/* ---- "THE EDIT" como página dupla escura ------------------ */
+.editorial--feature {
+  background: var(--ink);
+  color: var(--cream);
+  padding-bottom: var(--space-5);
+  margin: var(--space-4) 0;
+}
+.editorial--feature .eyebrow { color: var(--gold-light); }
+.editorial--feature .section-sub { color: rgba(246, 241, 231, 0.62); }
+/* os cards continuam claros — restaura o texto escuro deles */
+.editorial--feature .product-card { color: var(--ink); }
+.editorial--feature .section-head[data-num]::before {
+  -webkit-text-stroke-color: rgba(228, 211, 171, 0.28);
+}
+.editorial--feature .empty-state { color: rgba(246, 241, 231, 0.55); }
+
+/* ---- Cards da vitrine com hover mais rico ---------------- */
+.product-card { transition: opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.4s cubic-bezier(0.22,1,0.36,1), box-shadow 0.35s ease; }
+.product-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 34px 60px -30px rgba(27, 23, 18, 0.5);
+}
+.product-card:hover .product-photo { transform: scale(1.08); }
+.product-name { font-size: 1.05rem; }
+.product-card .featured-badge {
+  background: var(--gold);
+  letter-spacing: 0.16em;
+  padding: 0.4em 0.7em;
+  box-shadow: 0 6px 16px -6px rgba(0,0,0,0.4);
+}
+
+/* ---- Barra de progresso de leitura, mais visível --------- */
+.scroll-progress { height: 3px; background: rgba(27, 23, 18, 0.06); }
+.scroll-progress-bar { box-shadow: 0 0 12px rgba(185, 151, 91, 0.6); }
+
+/* ---- Newsletter com título maior ------------------------- */
+.newsletter h2 { font-size: clamp(2rem, 4.5vw, 3rem); letter-spacing: -0.01em; }
+.newsletter-inner { max-width: 560px; }
+
+@media (max-width: 860px) {
+  .hero-issue { display: none; }
+  .hero-ghost { font-size: 42vw; }
+  .hero-frame::after { inset: 7px; }
+  .section-head[data-num]::before {
+    font-size: clamp(2.8rem, 13vw, 4.2rem);
+    top: -0.42em;
+    left: var(--space-3);
+  }
+}
+
+/* ---- Chat: launcher em pílula + sugestões ---------------- */
+.aura-chat-launcher {
+  width: auto;
+  height: auto;
+  border-radius: 999px;
+  padding: 0.7em 1.15em;
+  gap: 0.5em;
+}
+.aura-chat-launcher-text {
+  font-family: var(--font-body);
+  font-size: 0.74rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.aura-chat-launcher-dot { top: 6px; right: 10px; }
+.aura-chat-launcher.hidden { transform: scale(0.6); }
+
+.aura-chat-suggestions {
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 92%;
+}
+.aura-chat-chip {
+  font-family: var(--font-body);
+  font-size: 0.76rem;
+  line-height: 1.35;
+  text-align: left;
+  padding: 0.55em 0.85em;
+  border: 1px solid var(--gold);
+  background: var(--cream);
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.aura-chat-chip:hover { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+
+@media (max-width: 480px) {
+  .aura-chat-launcher-text { display: none; }
+  .aura-chat-launcher { padding: 0; width: 52px; height: 52px; }
+}
+
+/* segura a entrada do hero até o preloader sair */
+html:not(.intro-ready) .reveal-load,
+html:not(.intro-ready) .hero-photo { animation-play-state: paused; }
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-gold::before { transition: none; }
+  .product-card, .product-card:hover .product-photo { transition: none; }
+  html:not(.intro-ready) .reveal-load,
+  html:not(.intro-ready) .hero-photo { animation-play-state: running; }
 }

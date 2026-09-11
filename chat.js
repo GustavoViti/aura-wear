@@ -436,6 +436,27 @@
     if (greeted) return;
     greeted = true;
     addBubble("bot", "Oi. Sou a colunista da Aura Wear — me diz a ocasião, um orçamento ou um clima, e eu monto o look. Posso jogar direto na sua sacola também.");
+    renderSuggestions([
+      "Look para um jantar, até $400",
+      "O que combina com o Blazer Waldorf?",
+      "Algo com pegada Blair Waldorf",
+    ]);
+  }
+
+  function renderSuggestions(items) {
+    const wrap = h("div", "aura-chat-suggestions");
+    items.forEach((txt) => {
+      const chip = h("button", "aura-chat-chip", escapeHTML(txt));
+      chip.type = "button";
+      chip.addEventListener("click", () => {
+        wrap.remove();
+        els.input.value = txt;
+        handleSend();
+      });
+      wrap.appendChild(chip);
+    });
+    els.body.appendChild(wrap);
+    scrollDown();
   }
 
   function openPanel() {
@@ -461,7 +482,8 @@
     const launcher = h(
       "button",
       "aura-chat-launcher",
-      `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-6.5A8 8 0 1 1 21 12z"/></svg>
+      `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-6.5A8 8 0 1 1 21 12z"/></svg>
+       <span class="aura-chat-launcher-text">A colunista</span>
        <span class="aura-chat-launcher-dot"></span>`
     );
     launcher.type = "button";

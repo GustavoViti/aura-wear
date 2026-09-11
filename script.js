@@ -433,9 +433,14 @@
       return;
     }
 
-    lines.forEach((el, i) => {
-      setTimeout(() => scrambleText(el, el.dataset.final, 650), 350 + i * 300);
-    });
+    const run = () =>
+      lines.forEach((el, i) => {
+        setTimeout(() => scrambleText(el, el.dataset.final, 650), i * 260);
+      });
+
+    // dispara junto com a saída do preloader (abertura mais impactante)
+    if (document.documentElement.classList.contains("intro-ready")) run();
+    else document.addEventListener("aura:intro-done", run, { once: true });
   }
 
   /* ============================================

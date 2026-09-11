@@ -1,48 +1,67 @@
 (function () {
   "use strict";
 
+  // trava de segurança: a home nunca pode ficar presa atrás do preloader
+  setTimeout(() => document.documentElement.classList.add("intro-ready"), 4500);
+
   /* ============================================
      PRELOADER
      ============================================ */
   function initPreloader() {
     const preloader = document.getElementById("preloader");
-    if (!preloader) return;
+    if (!preloader) {
+      document.documentElement.classList.add("intro-ready");
+      return;
+    }
 
-    const hide = () => preloader.classList.add("hide");
+    const fill = document.getElementById("preloaderFill");
+    const countEl = document.getElementById("preloaderCount");
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    const marks = preloader.querySelectorAll(".preloader-mark span");
-    const lastMark = marks[marks.length - 1];
+    let hidden = false;
+    function hide() {
+      if (hidden) return;
+      hidden = true;
+      if (countEl) countEl.textContent = "100";
+      if (fill) fill.style.width = "100%";
+      document.documentElement.classList.add("intro-ready");
+      document.dispatchEvent(new CustomEvent("aura:intro-done"));
+      preloader.classList.add("hide");
+      setTimeout(() => preloader.classList.add("gone"), 850);
+    }
 
-    let animationDone = !lastMark;
+    if (reduce) {
+      // sem contagem: espera o load e sai direto
+      if (document.readyState === "complete") hide();
+      else window.addEventListener("load", hide, { once: true });
+      setTimeout(hide, 3000);
+      return;
+    }
+
+    // contagem 0 -> 100; anda até ~92 e fecha quando a página carrega
+    const start = performance.now();
+    const RAMP = 1100; // ms até ~92%
     let pageLoaded = document.readyState === "complete";
+    window.addEventListener("load", () => { pageLoaded = true; }, { once: true });
 
-    function maybeHide() {
-      if (animationDone && pageLoaded) hide();
+    function tick(now) {
+      if (hidden) return;
+      const t = Math.min((now - start) / RAMP, 1);
+      const eased = 1 - Math.pow(1 - t, 2);
+      let pct = Math.floor(eased * 92);
+      if (pageLoaded && t >= 1) pct = 100;
+      if (countEl) countEl.textContent = String(pct);
+      if (fill) fill.style.width = pct + "%";
+      if (pct >= 100) {
+        setTimeout(hide, 180);
+        return;
+      }
+      requestAnimationFrame(tick);
     }
+    requestAnimationFrame(tick);
 
-    // só some depois que a última letra terminar de "subir"
-    if (lastMark) {
-      lastMark.addEventListener(
-        "animationend",
-        () => {
-          animationDone = true;
-          maybeHide();
-        },
-        { once: true }
-      );
-    }
-
-    if (pageLoaded) {
-      maybeHide();
-    } else {
-      window.addEventListener("load", () => {
-        pageLoaded = true;
-        maybeHide();
-      });
-    }
-
-    // rede lenta (ou animação desativada) não deve travar a experiência
-    setTimeout(hide, 8000);
+    // não deixa a abertura passar de ~3,3s de qualquer jeito
+    setTimeout(hide, 3300);
   }
 
   /* ============================================
