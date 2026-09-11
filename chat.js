@@ -262,7 +262,12 @@
   /* ============================================
      CHAMADA À API
      ============================================ */
-  async function callGemini() {
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  // status em que vale a pena tentar de novo (sobrecarga / instabilidade)
+  const RETRYABLE = new Set([429, 500, 502, 503, 504]);
+
+  async function callGeminiOnce() {
     const body = {
       systemInstruction: { parts: [{ text: buildSystemPrompt() }] },
       contents: history,
@@ -275,7 +280,8 @@
 
     const payload = JSON.stringify(body);
     const variants = requestVariants();
-    let lastErr = "";
+    let lastStatus = 0;
+    let lastMsg = "";
 
     for (let i = 0; i < variants.length; i++) {
       const v = variants[i];
@@ -290,13 +296,34 @@
         /* ignora */
       }
       if (errObj) console.error("[chat] resposta Gemini:", errObj);
-      lastErr = `${res.status} ${(errObj && errObj.message) || ""}`.trim();
+      lastStatus = res.status;
+      lastMsg = (errObj && errObj.message) || "";
 
       // 401/403 => credencial no formato errado; tenta o próximo jeito.
       if ((res.status === 401 || res.status === 403) && i < variants.length - 1) continue;
-      throw new Error(lastErr);
+      break;
     }
-    throw new Error(lastErr || "falha na requisição");
+
+    const err = new Error(`${lastStatus} ${lastMsg}`.trim() || "falha na requisição");
+    err.status = lastStatus;
+    err.retryable = RETRYABLE.has(lastStatus);
+    throw err;
+  }
+
+  // tenta algumas vezes quando o modelo está sobrecarregado (503/429/5xx).
+  // O indicador de "digitando..." continua na tela, então parece só demora.
+  async function callGemini() {
+    const backoff = [700, 1600, 3200];
+    for (let attempt = 0; ; attempt++) {
+      try {
+        return await callGeminiOnce();
+      } catch (e) {
+        const canRetry = (e.retryable || e.name === "TypeError") && attempt < backoff.length;
+        if (!canRetry) throw e;
+        console.warn(`[chat] tentativa ${attempt + 1} falhou (${e.status || e.message}); repetindo…`);
+        await sleep(backoff[attempt] + Math.random() * 400);
+      }
+    }
   }
 
   async function converse(userText) {
@@ -408,6 +435,22 @@
     }
   }
 
+  // mensagem no tom da colunista — sem código de status, sem "erro".
+  function friendlyError(e) {
+    const overloaded = e && (e.status === 503 || e.status === 429);
+    const pool = overloaded
+      ? [
+          "A redação está uma loucura agora — todo mundo querendo palpite ao mesmo tempo. Me pergunta de novo daqui a pouco, tá? XOXO.",
+          "Fila na porta da coluna nesse momento. Respira, conta até dez e manda a pergunta outra vez.",
+          "Estou atendendo meia Manhattan agora mesmo. Repete daqui a pouquinho que eu te respondo direitinho.",
+        ]
+      : [
+          "Perdi o fio da meada agora. Manda de novo que eu retomo.",
+          "Deu uma engasgada aqui na redação. Tenta de novo daqui a pouco.",
+        ];
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
   async function handleSend() {
     const text = els.input.value.trim();
     if (!text || sending) return;
@@ -424,7 +467,7 @@
     } catch (e) {
       console.error("[chat]", e);
       showTyping(false);
-      addBubble("bot", "Tive um tropeço para falar com a redação agora. Tenta de novo daqui a pouco. (" + escapeHTML(e.message || "erro") + ")");
+      addBubble("bot", friendlyError(e));
     } finally {
       sending = false;
       els.send.disabled = false;
