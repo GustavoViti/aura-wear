@@ -27,7 +27,7 @@
       document.documentElement.classList.add("intro-ready");
       document.dispatchEvent(new CustomEvent("aura:intro-done"));
       preloader.classList.add("hide");
-      setTimeout(() => preloader.classList.add("gone"), 1000);
+      setTimeout(() => preloader.classList.add("gone"), 1150);
     }
 
     if (reduce) {
@@ -40,7 +40,7 @@
 
     // contagem 0 -> 100; anda até ~92 e fecha quando a página carrega
     const start = performance.now();
-    const RAMP = 1950; // ms até ~92%
+    const RAMP = 3400; // ms até ~92%
     let pageLoaded = document.readyState === "complete";
     window.addEventListener("load", () => { pageLoaded = true; }, { once: true });
 
@@ -53,15 +53,15 @@
       if (countEl) countEl.textContent = String(pct);
       if (fill) fill.style.width = pct + "%";
       if (pct >= 100) {
-        setTimeout(hide, 420);
+        setTimeout(hide, 650);
         return;
       }
       requestAnimationFrame(tick);
     }
     requestAnimationFrame(tick);
 
-    // não deixa a abertura passar de ~4,6s de qualquer jeito
-    setTimeout(hide, 4600);
+    // não deixa a abertura passar de ~7s de qualquer jeito
+    setTimeout(hide, 7000);
   }
 
   /* ============================================

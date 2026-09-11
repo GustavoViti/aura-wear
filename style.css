@@ -1059,7 +1059,7 @@ a:focus-visible, button:focus-visible {
   color: var(--gold-light);
   margin: 0 0 1.4rem;
   opacity: 0;
-  animation: fadeUp 0.9s ease 0.2s forwards;
+  animation: fadeUp 1s ease 0.35s forwards;
 }
 
 .preloader-mark {
@@ -1069,13 +1069,13 @@ a:focus-visible, button:focus-visible {
   letter-spacing: 0.16em;
   line-height: 1;
   opacity: 0;
-  animation: fadeUp 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.5s forwards;
+  animation: fadeUp 1.3s cubic-bezier(0.22, 1, 0.36, 1) 0.75s forwards;
 }
 
 .preloader-bar,
 .preloader-count {
   opacity: 0;
-  animation: fadeUp 0.8s ease 1s forwards;
+  animation: fadeUp 0.9s ease 1.5s forwards;
 }
 
 .preloader-dot { color: var(--gold); }
@@ -1113,7 +1113,7 @@ a:focus-visible, button:focus-visible {
   height: 50.5%;
   background: var(--ink);
   z-index: 1;
-  transition: transform 0.85s cubic-bezier(0.7, 0, 0.3, 1);
+  transition: transform 1s cubic-bezier(0.7, 0, 0.3, 1);
 }
 .preloader-panel--top { top: 0; }
 .preloader-panel--bottom { bottom: 0; }
